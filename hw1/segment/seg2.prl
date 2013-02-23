@@ -1,0 +1,316 @@
+#!/usr/bin/perl -w
+
+use strict;
+
+############################################################
+##  seg_examp1.prl
+##
+##  seg_examp1.prl < segment.data.train
+## 
+##
+##  Example of how one may begin a simple version of this
+##  program. Lines of text are read into a @test_lines array
+##  of lines (with length measured in $numb_lines) until a 
+##  blank line is reached. Then the lines in the previous 
+##  segment are processed.  The array @real_lines stores the
+##  values of the correct classifications for the given in-
+##  put data, useful for comparison with the segment class-
+##  ifications chosen by the program.
+############################################################
+
+my @test_lines = ( );    # the current line that we are testing
+my @real_lines = ( );    # the correct classification for the current line
+my $numb_lines = 0;      # the number of lines in the block that we testing
+
+my $correct   = 0;       # number of correct classifications
+my $incorrect = 0;       # number of incorrect classifications
+my $line      = undef;
+
+
+while (defined ($line = <STDIN>)) {
+    chomp $line;
+    if ($line =~ /^#BLANK#/) {
+        &process_segment if $numb_lines;     # if we are at a blank line then
+                                             # it is time to process the pre-
+                                             # vious block
+        print $line, "\n";
+
+        @test_lines  = ( );   # make sure that we clear memory here or else
+        @real_lines  = ( );   #  these arrays may hold old data which will
+        $numb_lines  = 0;     #  screw up calculations of their length
+    }
+    else {
+
+        ($test_lines[ $numb_lines ]) = ($line =~ m/^[^\t]+\t(.*)/);
+        ($real_lines[ $numb_lines ]) = ($line =~ m/^([^\t]+)\t/  );
+
+        $numb_lines += 1;
+    }
+}
+
+############################################################
+## Process segments by applying specialized detectors/
+## classifiers to the array of the text lines in the segment 
+############################################################
+
+
+sub process_segment {
+    my $cnt;
+    if    ( &quoted_detector ) {
+        &detected("QUOTED");
+        return;
+    } 
+    elsif (&head_detector) {
+        &detected("NNHEAD");
+        return;
+    }
+    elsif (&graphic_detector) {
+        &detected("GRAPHIC");
+        return;
+    }
+    elsif (&headline_detector) {
+        &detected("HEADL");
+        return;
+    }
+    else {
+        &detected("PTEXT");
+        return;
+  }
+}
+
+sub detected {
+    my $label = shift;
+    for (my $cnt = 0; $cnt < scalar @test_lines; $cnt++) {
+        &ret(0, $real_lines[$cnt], $label, $test_lines[$cnt]);
+    }
+}
+############################################################
+## This is an incomplete example of what a quotation detector
+## might look like.
+############################################################
+#
+#
+#
+sub graphic_detector {
+    my $num_char = 0;
+    my $num_symbol = 0;
+    my $score = 0;
+    my $weight_sym_ratio = 0.5;
+    my $weight_rep_char = 0.5;
+    my $weight_score = 0.6;
+    my $repcharword = 0;
+    for (my $cnt = 0; $cnt < scalar @test_lines; $cnt++) {
+        my @words = split(" ", $test_lines[$cnt]);
+        $num_char = 0;
+        $num_symbol = 0;
+        $repcharword = 0;
+        for (my $word_cnt = 0; $word_cnt < scalar @words; $word_cnt++) {
+            my @chars = split(//, $words[$word_cnt]);
+            for (my $char_cnt = 0; $char_cnt < scalar @chars; $char_cnt++) {
+                $num_char++;
+                if ($chars[$char_cnt] =~ /[~|@|#|\$|%|^|&|\*|\(|\)|\-|_|=|\+|\[|\]|:|;|"|'|<|>|,|\.|\/|\?|\\|\|]/) {
+                    $num_symbol++;
+                }
+            }
+            my $fc = $chars[0];
+            if ($fc =~ /[A-Za-z]/ && $words[$word_cnt] =~ /^$fc$/) {
+                $repcharword++;
+            }
+        }
+        print "repcharword: $repcharword\n";
+        # print "num_char: $num_char, num_symbol, $num_symbol\n";
+        # print "ratio: ", $num_symbol / $num_char, "\n";
+        if ($num_symbol / $num_char >= $weight_sym_ratio || $repcharword / scalar @words >= $weight_rep_char) {
+            $score++;
+        }
+    }
+    return ($score / scalar @test_lines >= $weight_score);
+}
+sub headline_detector {
+    my $weight1 = 0.75;
+    my $weight2 = 0.5;
+    my $score = 0;
+    my $linesymbols = 0;
+    my $lineallcaps = 0;
+    for (my $cnt = 0; $cnt < scalar @test_lines; $cnt++) {
+        my $spaces = "";
+        ($spaces) = ($test_lines[$cnt] =~ /^(\s+)/);
+        my @words = split(" ", $test_lines[$cnt]);
+        my $caps = 0;
+        my $allcaps = 0;
+        foreach (@words) {
+            if ($_ =~ /^[A-Z0-9]/ || $_=~ /at|or|and|in|of|on|the/) {
+                # print "haha";
+                $caps += 1;      
+            }
+            if ($_ =~ /^[A-Z0-9]*$/) {
+                $allcaps += 1;
+            }
+        }
+        if ($test_lines[$cnt] =~ /\s*^[\-{3,}|={3,}]$ \s*/) {
+            $linesymbols += 1;
+        }
+        if ($allcaps == scalar(@words)) {
+            $lineallcaps += 1;
+        } elsif (($caps / scalar(@words) >= $weight1) && ($spaces && length($spaces) >= 1)) {
+            $score += 1;
+        }
+
+    }
+    # print "SCORE: $score\n";
+    return (($linesymbols * 2 + $lineallcaps * 2 + $score) / scalar(@test_lines) >= $weight2);
+
+
+}
+sub head_detector {
+    my $weight = 5;
+    my $from = "^From.+";
+    my $article = "^Article:.+";
+    my $path = "^Newsgroups:.+";
+    my $subject = "^Subject:.+";
+    my $message_id = "^Message-ID:.+";
+    my $date = "^Date:.+";
+    my $sender = "^Sender:.+";
+    my $dist = "^Distribution:.+";
+    my $organ = "^Organization:.+";
+    my $lines = "^Lines:.+";
+    my %feats = (
+        $from => 0,
+        $article => 0,
+        $path => 0,
+        $subject => 0,
+        $sender => 0,
+        $message_id => 0,
+        $date => 0,
+        $dist => 0,
+        $organ => 0,
+        $lines => 0
+    );
+
+    
+    for (my $cnt = 0; $cnt < scalar @test_lines; $cnt++) {
+        for my $key (keys %feats) {
+            if ($test_lines[$cnt] =~ /$key/) {
+                $feats{$key} += 1;
+            }
+        }
+    }
+
+    my $score = 0;
+    for my $key (keys %feats) {
+        if ($feats{$key} > 0) {
+            $score += 1;
+        }
+    }
+    
+    return $score >= $weight;
+}
+
+    
+sub quoted_detector {
+
+    my $score  = 0;
+    my $weight = 0.75;   # weight is a variable so that it is easy to find
+    my $cnt;             #  and change.
+
+    # I like to assign regex's to variable names so that I can later
+    # build very large and complex regex's with little space. This 
+    # also forces perl to compile the regex's once only which speeds
+    # things up dramatically
+    #
+    # note that each regex is built from a "..." string. This means 
+    # each regex is interpolated which can have some unexpected results
+    # with regards to perl meta characters (see $quote5 below).
+
+    my $quote1 = ">";
+    my $quote2 = ":";
+    my $quote3 = "\\|>"; # so we need to quote meta twice here becasue this
+                         # regex's is evaluated first here and then at $block-
+                         # _quote below.
+                         # 
+                         # I could probably solve this problem by using single
+                         # quotes here, but I still have to quote meta once
+                         # for the regex below (which must use double quotes).
+    my $quote4 = "\\@";
+    # these are compilations of the above regex's into a single regex.
+    # The "..." quotes means that each regex is interpolated which is
+    # why I "\\|" above so that "|" is interpreted to mean '|' and not
+    # "or".
+    #
+    # if I were just searching for the above three delimiters it would have
+    # been more efficient for me to use a case statement like check
+    #
+    #   $score++ and next if $test_lines[$cnt] =~ /^$quote1/;
+    #   $score++ and next if $test_lines[$cnt] =~ /^$quote2/;
+    #   etc. ...
+    #
+    # but I noticed from the test data that many "QUOTED" delimiters are
+    # compilations of the above three and to write each of those out would
+    # require 3 * 2^n permutations (n being the number of repeats of a 
+    # delimiter). Here I do the whole thing with only one regex.
+
+    my $block_quote1 = "$quote1|$quote2|$quote3|$quote4";
+    my $block_quote2 = "$quote1|$quote2|$quote4";
+
+    # the below regex will grab strings of the form
+    #
+    #   ">  some quote ... "
+    #   ":  some quote ... "
+    #   "|> some quote ... "
+    #
+    # as well as regex's of the form
+    #
+    #   ": > some quote ... "
+    #   ">>> some quote ... "
+    #   etc. ...
+
+    my $test_quote1  = "^($block_quote1)(\\s*($block_quote2))*";
+    my $test_quote2  = "^.+((<.*\\@.*>)|(\(.*\\@.*\))).+(wrote|writes):";
+    my $test_quote3  = "^In article\\s<.*\\@.*>";
+    my $prefix = "";
+    if ($test_lines[0] =~ /^\s*([a-zA-Z]{1,5}\s*>)\s*/) {
+        $prefix = $1;
+    }
+    for ($cnt = 0; $cnt < scalar @test_lines; $cnt++) {
+
+        if ( $test_lines[$cnt] =~ /$test_quote1/ ||
+             $test_lines[$cnt] =~ /$test_quote2/ ||
+             $test_lines[$cnt] =~ /$test_quote3/ ||
+             (($prefix ne "") && ($test_lines[$cnt] =~ /^\s*$prefix\s*/))) {
+            $score++;
+        }
+    }
+
+    return (($score / (scalar @test_lines)) > $weight);
+}
+
+
+############################################################
+## RET - prints full line for errors and keeps score $rule
+##     - indicates the rule number responsible for the 
+##     - classification
+##
+##  This is a useful debugging tool, as after each change in
+##  the program one can identify the remaining misclassified
+##  training examples and the patterns responsible for them. 
+############################################################
+ 
+sub ret {
+
+    my $rule       = shift;   # which rule did I use here
+    my $trueclass  = shift;   # what is the true sentence class ('NEOS','EOS')
+    my $givenclass = shift;   # what is the sentence class my rule gives
+    my $line       = shift;   # the actual line tested
+
+    if ($trueclass eq $givenclass) {
+
+        printf(".. (%2d) %s\t%s\t%s\n",$rule,$givenclass,$trueclass,$line);
+        $correct++;
+    }
+    else {
+	
+        printf("XX (%2d) %s\t%s\t%s\n",$rule,$givenclass,$trueclass,$line);
+        $incorrect++;
+    }
+}
+

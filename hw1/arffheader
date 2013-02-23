@@ -1,0 +1,3 @@
+@RELATION eos
+@ATTRIBUTE r1ucfirst = {0, 1}
+

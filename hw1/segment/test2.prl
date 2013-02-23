@@ -1,0 +1,54 @@
+sub loadfile {
+    $path = shift;
+    @a = ();
+    open(FILE, $path) || die "Cannot open file $path";
+    while (<FILE>) {
+        chop;
+        $a[$#a + 1] = $_;
+    }
+    return "[" . join("|", @a) . "]";
+
+}
+
+#print &loadfile("address");
+#
+#
+#
+#if ("hah" =~ /hah|yes/) {
+#    print "yes";
+#} else {
+#    print "no";
+#}
+sub leadingspace {
+    my $str;
+    if ($_[0] =~ /(^\s+)/) {
+        $str = $1;
+    } else {
+        $str = "";
+    }
+    return length($str);
+}
+
+
+
+
+print &leadingspace("   uyes");
+
+
+#if ("1. haha" =~ /^(0..9)+\./) {
+#    print "match";
+#} else {
+#    print "nonoon";
+#}
+
+
+if ("1" =~ /^[0-9]/) {
+    print "yes";
+} else {
+    print "no";
+}
+#@a = ();
+#for (my $i = 0; $i < 10; $i++) {
+#    $a[$#a + 1] = $i;
+#}
+#print ("[" . join("|", @a) . "]");

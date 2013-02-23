@@ -1,0 +1,30 @@
+#!/usr/bin/perl
+my $quote1 = ">";
+my $quote2 = ":";
+my $quote3 = "\\|>"; # so we need to quote meta twice here becasue this
+                     # regex's is evaluated first here and then at $block-
+                     # _quote below.
+                     # 
+                     # I could probably solve this problem by using single
+                     # quotes here, but I still have to quote meta once
+                     # for the regex below (which must use double quotes).
+my $quote4 = "\\@";
+my $block_quote1 = "$quote1|$quote2|$quote3|$quote4";
+my $block_quote2 = "$quote1|$quote2|$quote4";
+my $test_quote1  = "^($block_quote1)(\s*($block_quote2))*";
+my $test_quote2  = "^.+(wrote|writes):";
+my $test_quote3  = "^In article\\s<.*\\@.*>";
+    if ($test_lines[0] =~ /^([a-zA-Z]{1,5}\s*>\s*)/) {
+        $prefix = $1;
+    }
+    for ($cnt = 0; $cnt < scalar @test_lines; $cnt++) {
+
+        if ( $test_lines[$cnt] =~ /$test_quote1/ ||
+             $test_lines[$cnt] =~ /$test_quote2/ ||
+             $test_lines[$cnt] =~ /$test_quote3/ ||
+             (($prefix ne "") && ($test_lines[$cnt] =~ /^$prefix/))) {
+            $score++;
+        }
+    }
+
+

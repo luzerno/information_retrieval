@@ -1,0 +1,346 @@
+#!/usr/bin/perl
+
+##########################################################
+##  EXAMPLE SHELL FOR END-OF-SENTENCE CLASSIFIER
+##
+##    examp1.prl < sent.data.train | more
+##
+##  Suggestion: run in a wide window
+##########################################################
+
+$L="/home/luzerno/workspace/ir/hw1/classes";
+
+&initialize_set(*abbrevs,"$L/abbrevs"); 
+&initialize_set(*titles,"$L/titles"); 
+&initialize_set(*unlikely_proper_nouns,"$L/unlikely_proper_nouns"); 
+&initialize_set(*timeterms,"$L/timeterms"); 
+&initialize_set(*sentence_internal,"$L/sentence_internal"); 
+
+# &header();
+while (<>) {
+    my $class, $r1Ucfirst, $r1NewPara, $r1Comma, $r1Period, $l1Title, $l1Abbrev, $Llength, $Rlength, $Nspaces, $r1Quote, $r1Semi, $l1Internal, $l1Cap;
+    @words = split(' ', $_);
+    ($class, $id, $L3, $L2, $L1, $c, $R1, $R2, $R3, $Llength, $Rlength, $Nspaces) = @words;
+    if ($R1 =~ /^[A-Z]/) {$r1Ucfirst = 1} else {$r1Ucfirst = 0}
+    if ($R1 eq "<P>") {$r1NewPara = 1} else {$r1NewPara = 0}
+    if ($R1 =~ /^[.]/) {$r1Period = 1} else {$r1Period = 0}
+    if ($R1 =~ /^[,]/) {$r1Comma = 1} else {$r1Comma = 0}
+    if (&classmember(lc($L1), titles)) {$l1Title = 1} else {$l1Title = 0}
+    if (&classmember(lc($L1), abbrevs)) {$l1Abbrev = 1} else {$l1Abbrev = 0}
+    if ($R1 eq "``") {$r1Quote = 1} else {$r1Quote = 0}
+    if ($R1 eq ";") {$r1Semi = 1} else {$r1Semi = 0}
+    if (&classmember(lc($L1), sentence_internal)) {$l1Internal = 1} else {$l1Internal = 0}
+    if ($L1 =~ /[A-Z]/) {$l1Cap = 1} else {$l1Cap = 0}
+    
+
+    # print $r1Ucfirst, ",", $r1NewPara, ",", $r1Comma, ",",  $r1Period, ",",  $l1Title, ",",  $l1Abbrev, ",",  $Llength, ",",  $Rlength, ",",  $Nspaces, ",",  $r1Quote, ",",  $r1Semi, ",",  $l1Internal, ",",  $l1Cap, ",", $class, "\n";
+
+    &ret($class, $id, &classify($class, $r1Ucfirst, $r1NewPara, $r1Comma, $r1Period, $l1Title, $l1Abbrev, $Llength, $Rlength, $Nspaces, $r1Quote, $r1Semi, $l1Internal, $l1Cap));
+    
+}
+print "Your score is: ", $correct/($correct+$incorrect), "\n";
+print "Cond1: $cond1\n";
+print $cond2, "\n";
+
+print $cond3, "\n";
+print $cond4, "\n";
+print $cond5, "\n";
+print $cond6, "\n";
+print $cond7, "\n";
+print $cond8, "\n";
+print $cond9, "\n";
+print $cond10, "\n";
+print $cond11, "\n";
+print $cond12, "\n";
+print $cond13, "\n";
+print $cond14, "\n";
+print $cond15, "\n";
+print $cond16, "\n";
+print $cond17, "\n";
+print $cond18, "\n";
+print $cond19, "\n";
+print $cond20, "\n";
+# while (<>) {
+#    @words = split(' ',$_);
+#    ($class,$id,$L3,$L2,$L1,$C,$R1,$R2,$R3,$Llength,$Rlength,$Nspaces) = @words;
+#  
+#    if    ($R1 =~ /^[a-z]/) { &ret(1,$class,$id,'NEOS');} # +1 is lower case
+#    elsif ($R1 eq "<P>")    { &ret(2,$class,$id,'EOS');}  # +1 is new paragraph
+#    elsif ($R1 =~ /^[,.]/)  { &ret(3,$class,$id,'NEOS');} # +1 is comma, period
+#    elsif ($R1 =~ /^[A-Z]/) {                             # +1 is capitalized 
+#       if (&classmember($L1,titles))   { &ret(5,$class,$id,'NEOS');}  # Mr. Mrs.
+#       else                            { &ret(4,$class,$id,'EOS');}   # default
+#    }
+#    else                     { &ret(0,$class,$id,'EOS');  # +1 is number, etc. 
+#    }
+# }
+# print "Your score is: ", $correct/($correct+$incorrect), "\n";
+#  
+##########################################################
+## RET - prints full line for errors and keeps score
+##     - $where indicates the rule number responsible for the classification
+##
+##  This is a useful debugging tool, as after each change in
+##  the program one can identify the remaining misclassified
+##  training examples and the patterns responsible for them. 
+##########################################################
+#
+sub classify {
+
+    local ($class, $r1Ucfirst, $r1NewPara, $r1Comma, $r1Period, $l1Title, $l1Abbrev, $Llength, $Rlength, $Nspaces, $r1Quote, $r1Semi, $l1Internal, $l1Cap) = @_;
+    my $res = "NEOS";
+
+
+
+    if ($l1Title == 1 &&
+    $r1NewPara == 0 &&
+    $l1Cap == 1) { $cond1 = $cond1 + 1; $res = "NEOS"; }
+
+    if ($r1Comma == 0 &&
+    $l1Abbrev == 0 &&
+    $l1Cap == 0 &&
+    $l1Internal == 0 &&
+    $r1Period == 0 &&
+    $r1Ucfirst == 1) { $cond2 += 1; $res = "EOS"; }
+
+    if ($l1Abbrev == 0 &&
+    $r1NewPara == 1) { $cond3 += 1;$res = "EOS"; }
+
+    if ($r1Comma == 0 &&
+    $r1Period == 0 &&
+    $Nspaces > 1 &&
+    $r1Quote == 0 &&
+    $l1Internal == 0 &&
+    $r1Ucfirst == 1 &&
+    $Nspaces <= 2 &&
+    $rLength > 6 &&
+    $lLength > 14 &&
+    $l1Cap == 1 &&
+    $l1Abbrev == 0) { print "yes"; $cond4 += 1;$res = "EOS"; }
+
+    if ($r1Quote == 1) { $cond5 += 1;$res = "EOS"; }
+
+    if ($r1Comma == 1) { $cond6 += 1;$res = "NEOS"; }
+
+    if ($r1Period == 0 &&
+    $Nspaces > 1 &&
+    $l1Internal == 0 &&
+    $l1Cap == 0 &&
+    $l1Title == 0 &&
+    $r1Ucfirst == 0 &&
+    $l1Abbrev == 0) { $cond7 += 1;$res = "EOS"; }
+
+    if ($r1Period == 1) { $cond8 += 1;$res = "NEOS"; }
+
+    if ($Nspaces > 1 &&
+    $r1Ucfirst == 1 &&
+    $l1Abbrev == 1 &&
+    $l1Cap == 0) { $cond9 += 1;$res = "EOS"; }
+
+    if ($l1Abbrev == 1 &&
+    $r1NewPara == 0 &&
+    $r1Ucfirst == 0) { $cond10 += 1;$res = "NEOS"; }
+
+    if ($Nspaces <= 0 &&
+    $l1Cap == 0) { $cond11 += 1;$res = "EOS"; }
+
+    if ($l1Internal == 1 &&
+    $l1Cap == 0) { $cond12 += 1;$res = "NEOS"; }
+
+    if ($l1Abbrev == 1 &&
+    $l1Cap == 0) { $cond13 += 1;$res = "EOS"; }
+
+    if ($Nspaces > 1 &&
+    $r1Ucfirst == 1 &&
+    $l1Internal == 0 &&
+    $lLength > 1 &&
+    $Nspaces <= 2 &&
+    $lLength <= 49 &&
+    $l1Abbrev == 0 &&
+    $lLength > 3) { $cond14 += 1;$res = "EOS"; }
+
+    if ($r1Ucfirst == 0 &&
+    $rLength > 1 &&
+    $l1Cap == 1 &&
+    $Nspaces <= 1) { $cond15 += 1;$res = "NEOS"; }
+
+    if ($l1Internal == 1 &&
+    $Nspaces <= 1) { $cond16 += 1;$res = "NEOS"; }
+
+    if ($lLength <= 10 &&
+    $l1Abbrev == 0 &&
+    $Nspaces > 1 &&
+    $lLength > 1 &&
+    $r1Ucfirst == 1 &&
+    $rLength <= 69) { $cond17 += 1;$res = "EOS"; }
+
+    if ($lLength <= 10 &&
+    $lLength > 0 &&
+    $l1Abbrev == 0 &&
+    $rLength > 12 &&
+    $Nspaces <= 1) { $cond18 += 1;$res = "NEOS"; }
+
+    if ($lLength <= 1 &&
+    $rLength > 6) { $cond19 += 1;$res = "EOS"; }
+
+    if ($r1NewPara == 0 &&
+    $Nspaces <= 2 &&
+    $l1Cap == 0 &&
+    $rLength > 1 &&
+    $rLength <= 78 &&
+    $lLength > 22) { $cond20 += 1;$res = "EOS"; }
+
+    if ($r1NewPara == 0 &&
+    $l1Cap == 0 &&
+    $lLength > 22) { $res = "EOS"; }
+
+    if ($r1NewPara == 0 &&
+    $Nspaces <= 2 &&
+    $rLength > 296 &&
+    $r1Ucfirst == 1 &&
+    $l1Abbrev == 0 &&
+    $rLength <= 674) { $res = "NEOS"; }
+
+    if ($r1NewPara == 0 &&
+    $Nspaces > 2) { $res = "EOS"; }
+
+    if ($r1NewPara == 0 &&
+    $rLength > 15 &&
+    $l1Cap == 0 &&
+    $rLength <= 69) { $res = "NEOS"; }
+
+    if ($r1NewPara == 0 &&
+    $l1Cap == 0 &&
+    $rLength <= 2) { $res = "EOS"; }
+
+    if ($r1NewPara == 1) { $res = "EOS"; }
+
+    if ($l1Cap == 0 &&
+    $rLength <= 9) { $res = "NEOS"; }
+
+    if ($l1Cap == 1 &&
+    $rLength > 15 &&
+    $r1Ucfirst == 1 &&
+    $l1Abbrev == 0) { $res = "EOS"; }
+
+    if ($l1Cap == 1 &&
+    $l1Abbrev == 1 &&
+    $Nspaces > 1 &&
+    $rLength <= 112) { $res = "EOS"; }
+
+    if ($l1Cap == 1 &&
+    $l1Abbrev == 1 &&
+    $lLength > 10 &&
+    $rLength > 13) { $res = "NEOS"; }
+
+    if ($l1Cap == 1 &&
+    $l1Abbrev == 0 &&
+    $l1Internal == 0 &&
+    $r1Ucfirst == 1 &&
+    $rLength <= 3 &&
+    $Nspaces <= 1) { $res = "NEOS"; }
+
+    if ($l1Cap == 1 &&
+    $l1Abbrev == 0 &&
+    $l1Internal == 0 &&
+    $Nspaces <= 1 &&
+    $lLength > 81 &&
+    $r1Ucfirst == 1) { $res = "NEOS"; }
+
+    if ($l1Cap == 1 &&
+    $l1Abbrev == 0 &&
+    $l1Internal == 0 &&
+    $Nspaces <= 1) { $res = "EOS"; }
+
+    if ($Nspaces > 1 &&
+    $rLength > 2 &&
+    $lLength <= 286 &&
+    $l1Internal == 0 &&
+    $r1Ucfirst == 0 &&
+    $rLength > 5) { $res = "NEOS"; }
+
+    if ($r1Ucfirst == 0) { $res = "EOS"; }
+
+    if ($l1Abbrev == 1) { $res = "EOS"; }
+
+    if ($rLength <= 2) { $res = "EOS"; }
+
+    if ($l1Internal == 0 &&
+    $lLength <= 111) { $res = "EOS"; }
+
+
+    return $res;
+
+}
+sub header {
+    print "\@RELATION eos\n";
+    print "\@ATTRIBUTE r1Ucfirst {0, 1}\n";
+    print "\@ATTRIBUTE r1NewPara {0, 1}\n";
+    print "\@ATTRIBUTE r1Comma {0, 1}\n";
+    print "\@ATTRIBUTE r1Period {0, 1}\n";
+    print "\@ATTRIBUTE l1Title {0, 1}\n";
+
+    print "\@ATTRIBUTE l1Abbrev {0, 1}\n";
+
+    print "\@ATTRIBUTE lLength numeric\n";
+    
+    print "\@ATTRIBUTE rLength numeric\n";
+    print "\@ATTRIBUTE Nspaces numeric\n";
+    print "\@ATTRIBUTE r1Quote {0, 1}\n";
+
+    print "\@ATTRIBUTE r1Semi {0, 1}\n";
+
+    print "\@ATTRIBUTE l1Internal {0, 1}\n";
+
+    print "\@ATTRIBUTE l1Cap {0, 1}\n";
+
+    print "\@ATTRIBUTE class {EOS, NEOS}\n";
+    print "\@DATA\n";
+
+
+}
+sub ret {
+   local($trueclass,$id,$givenclass) = @_;
+   
+   if ($trueclass eq $givenclass) {
+      # print ".. ", $_;
+      $correct++; 
+   }
+   else {
+      # print "XX  ", $_;
+      $incorrect++;
+   }
+   # next;
+}
+
+##########################################################
+## CLASSMEMBER - tests for membership of $key in a given set
+##
+##  The \L in $set{"\L$key"} is a perl hack to convert a
+##  string into all lower case for lookup in a word array
+##  insensitive to the capitalization of the original key.
+##########################################################
+
+sub classmember{
+   local ($key,*set) = @_;
+
+   return $set{"\L$key"};
+}
+
+##########################################################
+## INITIALIZE_SET - loads named associative array with set members   
+##########################################################
+
+sub initialize_set{
+    local (*set,$where) = @_;
+   
+    open (FILE,$where) || die "Can't open file $where: $!\n";
+
+    while (<FILE>) {
+        chop;
+        $set{$_} = 1;
+    }
+    close (FILE);
+}
+
+

@@ -1,0 +1,24 @@
+$correct = 0;
+$incorrect = 0;
+while (<>) {
+    chop;
+    @words = split(",", $_);
+    local ($sepallength, $sepalwidth, $petallength, $petalwidth, $class) = @words;
+    
+    $myclass = &classify($sepallength, $sepalwidth, $petallength, $petalwidth);
+    if ($class eq $myclass) {
+        $correct++;
+    } else {
+        $incorrect++;
+    }
+}
+print "Correct: $correct\nIncorrect: $incorrect";
+
+sub classify() {
+    local ($sepallength, $sepalwidth, $petallength, $petalwidth) = @_;
+    if ($petalwidth <= 0.6) {return "Iris-setosa";}
+    if ($petalwidth <= 1.7 && $petallength <= 4.9) {return "Iris-versicolor";}
+    return "Iris-virginica";
+
+
+}

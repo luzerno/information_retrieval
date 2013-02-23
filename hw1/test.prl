@@ -1,0 +1,7 @@
+
+my $test_quote3  = "^(In article)\s<.*\@.*>";
+if ("In article <3mgr05\$rf3\@kei.com>" =~ /.*/) {
+    print "yes";
+} else {
+    print "no";
+}
