@@ -20,14 +20,18 @@ use strict;
 ##  ifications chosen by the program.
 ############################################################
 
+my @old_test_lines = ();
+my @old_real_lines = ();
 my @test_lines = ( );    # the current line that we are testing
 my @real_lines = ( );    # the correct classification for the current line
 my $numb_lines = 0;      # the number of lines in the block that we testing
-
+my $old_numb_lines = 0;
+my $result = undef;
+my $current_result = undef;
 my $correct   = 0;       # number of correct classifications
 my $incorrect = 0;       # number of incorrect classifications
 my $line      = undef;
-
+my $old_line = "";
 
 # /\([0..9]{3}\)\s[0..9]{3}\-[0..9]{4}/
 # /^[0..9]{5}\-[0..9]{4}$/
@@ -46,20 +50,42 @@ my $placeregex = &loadfile("places");
 my $contactregex = &loadfile("contact");
 my $addressregex = &loadfile("address");
 
-# print "places: $placeregex\ncontact: $contactregex\naddress: $addressregex";
 
 
 while (defined ($line = <STDIN>)) {
     chomp $line;
     if ($line =~ /^#BLANK#/) {
-        &process_segment if $numb_lines;     # if we are at a blank line then
-                                             # it is time to process the pre-
-                                             # vious block
-        print $line, "\n";
 
-        @test_lines  = ( );   # make sure that we clear memory here or else
-        @real_lines  = ( );   #  these arrays may hold old data which will
-        $numb_lines  = 0;     #  screw up calculations of their length
+        if ($numb_lines) {
+            $current_result = &process_segment;     # if we are at a blank line then
+                                                 # it is time to process the pre-
+                                                # vious block
+            if ($result) {
+                if ($current_result eq "NNHEAD") {
+                    if ($result eq "GRAPHIC") {
+                        &detected("SIG");
+                    }
+                    elsif ($result eq "ITEM" && scalar @old_test_lines == 1) {
+                        &detected("SIG");
+                    } else {
+                        &detected($result);
+                    }
+                } else {
+                    &detected($result);
+                }
+            }
+            $result = $current_result;
+            @old_test_lines = @test_lines;
+            @old_real_lines = @real_lines;
+            print $old_line;
+            $old_line = "";
+
+            @test_lines  = ( );   # make sure that we clear memory here or else
+            @real_lines  = ( );   #  these arrays may hold old data which will
+            $numb_lines  = 0;     #  screw up calculations of their length
+        }
+        $old_line = $old_line . $line. "\n";
+
     }
     else {
 
@@ -68,7 +94,17 @@ while (defined ($line = <STDIN>)) {
 
         $numb_lines += 1;
     }
+    
 }
+print @test_lines;
+# @old_test_lines = @test_lines;
+# @old_real_lines = @real_lines;
+if ($current_result eq "GRAPHIC") {
+    &detected("SIG");
+} else {
+    &detected($current_result);
+}
+print $old_line;
 print "CORRECTNESS: ", $correct / ($correct + $incorrect), "\n";
 ############################################################
 ## Process segments by applying specialized detectors/
@@ -79,47 +115,47 @@ print "CORRECTNESS: ", $correct / ($correct + $incorrect), "\n";
 sub process_segment {
     my $cnt;
     if ( &quoted_detector ) {
-        &detected("QUOTED");
-        return;
+        # &detected("QUOTED");
+        return "QUOTED";
     } 
 
     elsif (&head_detector) {
-        &detected("NNHEAD");
-        return;
+        # &detected("NNHEAD");
+        return "NNHEAD";
     }
     elsif (&graphic_detector) {
-        &detected("GRAPHIC");
-        return;
+        # &detected("GRAPHIC");
+        return "GRAPHIC";
     }
     elsif (&address_detector) {
-        &detected("ADDRESS");
-        return;
+        # &detected("ADDRESS");
+        return "ADDRESS";
     }
     elsif (&headline_detector) {
-        &detected("HEADL");
-        return;
+        # &detected("HEADL");
+        return "HEADL";
     }
     elsif (&table_detector) {
-        &detected("TABLE");
-        return;
+        # &detected("TABLE");
+        return "TABLE";
     }
     elsif (&item_detector) {
-        &detected("ITEM");
-        return;
+        # &detected("ITEM");
+        return "ITEM";
     }   
     # elsif (&sig_detector) {
     #     &detected("SIG");
     # }
     else {
-        &detected("PTEXT");
-        return;
+        # &detected("PTEXT");
+        return "PTEXT";
   }
 }
 
 sub detected {
     my $label = shift;
-    for (my $cnt = 0; $cnt < scalar @test_lines; $cnt++) {
-        &ret(0, $real_lines[$cnt], $label, $test_lines[$cnt]);
+    for (my $cnt = 0; $cnt < scalar @old_test_lines; $cnt++) {
+        &ret(0, $old_real_lines[$cnt], $label, $old_test_lines[$cnt]);
     }
 }
 ############################################################

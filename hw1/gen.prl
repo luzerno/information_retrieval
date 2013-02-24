@@ -40,7 +40,35 @@ sub genArff() {
         
     }
 }
+sub getFeatures() {
+    my $line = shift;
+    my $class, $r1Ucfirst, $r1NewPara, $r1Comma, $r1Period, $l1Title, $l1Abbrev, $lLength, $rLength, $Nspaces, $r1Quote, $r1Semi, $l1Internal, $l1Cap;
+    @words = split(' ', $line);
+    ($class, $id, $L3, $L2, $L1, $c, $R1, $R2, $R3, $lLength, $rLength, $Nspaces) = @words;
+    if ($R1 =~ /^[A-Z]/) {$r1Ucfirst = 1} else {$r1Ucfirst = 0}
+    if ($R1 eq "<P>") {$r1NewPara = 1} else {$r1NewPara = 0}
+    if ($R1 =~ /^[.]/) {$r1Period = 1} else {$r1Period = 0}
+    if ($R1 =~ /^[,]/) {$r1Comma = 1} else {$r1Comma = 0}
+    if (&classmember(lc($L1), titles)) {$l1Title = 1} else {$l1Title = 0}
+    if (&classmember(lc($L1), abbrevs)) {$l1Abbrev = 1} else {$l1Abbrev = 0}
+    if ($R1 eq "``") {$r1Quote = 1} else {$r1Quote = 0}
+    if ($R1 eq ";") {$r1Semi = 1} else {$r1Semi = 0}
+    if (&classmember(lc($L1), sentence_internal)) {$l1Internal = 1} else {$l1Internal = 0}
+    if ($L1 =~ /[A-Z]/) {$l1Cap = 1} else {$l1Cap = 0}
+       
+    return ($class, $id, $r1Ucfirst, $r1NewPara, $r1Comma, $r1Period, $l1Title, $l1Abbrev, $lLength, $rLength, $Nspaces, $r1Quote, $r1Semi, $l1Internal, $l1Cap);
 
+
+
+}
+sub genResult() {
+    while (<>) {
+
+        local ($class, $id, $r1Ucfirst, $r1NewPara, $r1Comma, $r1Period, $l1Title, $l1Abbrev, $lLength, $rLength, $Nspaces, $r1Quote, $r1Semi, $l1Internal, $l1Cap) = &getFeatures($_);
+        &ret($class, $id, &classify($class, $r1Ucfirst, $r1NewPara, $r1Comma, $r1Period, $l1Title, $l1Abbrev, $lLength, $rLength, $Nspaces, $r1Quote, $r1Semi, $l1Internal, $l1Cap));
+        
+    }
+}
 
 sub readArff() {
     my $myclass;
@@ -58,7 +86,7 @@ sub readArff() {
 
 }
 
-&genArff();
+&genResult();
 
 print "Your score is: ", $correct/($correct+$incorrect), "\n";
 # print "Cond1: $cond1\n";
