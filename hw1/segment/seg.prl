@@ -115,39 +115,28 @@ print "CORRECTNESS: ", $correct / ($correct + $incorrect), "\n";
 sub process_segment {
     my $cnt;
     if ( &quoted_detector ) {
-        # &detected("QUOTED");
         return "QUOTED";
     } 
 
     elsif (&head_detector) {
-        # &detected("NNHEAD");
         return "NNHEAD";
     }
     elsif (&graphic_detector) {
-        # &detected("GRAPHIC");
         return "GRAPHIC";
     }
     elsif (&address_detector) {
-        # &detected("ADDRESS");
         return "ADDRESS";
     }
     elsif (&headline_detector) {
-        # &detected("HEADL");
         return "HEADL";
     }
     elsif (&table_detector) {
-        # &detected("TABLE");
         return "TABLE";
     }
     elsif (&item_detector) {
-        # &detected("ITEM");
         return "ITEM";
     }   
-    # elsif (&sig_detector) {
-    #     &detected("SIG");
-    # }
     else {
-        # &detected("PTEXT");
         return "PTEXT";
   }
 }
@@ -271,7 +260,7 @@ sub address_detector {
         # print "charcnt: $charcnt\n";
     }
      
-    return &indentsamelevel && ($shortlines / scalar @test_lines >= 0.8) && ($contact_score + $address_score + $place_score >= 2);
+    return &indentsamelevel && ($shortlines / scalar @test_lines >= 0.8) && (1.5 * $contact_score + $address_score + $place_score >= 2);
     
 }
 sub item_detector {
@@ -356,6 +345,8 @@ sub headline_detector {
     my $score = 0;
     my $linesymbols = 0;
     my $lineallcaps = 0;
+    my $leadingspace = 0;
+    my $linecaps = 0;
     for (my $cnt = 0; $cnt < scalar @test_lines; $cnt++) {
         my $spaces = "";
         ($spaces) = ($test_lines[$cnt] =~ /^(\s+)/);
@@ -376,13 +367,17 @@ sub headline_detector {
         }
         if ($allcaps == scalar(@words)) {
             $lineallcaps += 1;
-        } elsif (($caps / scalar(@words) >= $weight1) && ($spaces && length($spaces) >= 1)) {
-            $score += 1;
+        } 
+        if ($caps / scalar(@words) >= $weight1) {
+           $linecap += 1; 
         }
-
+        if ($spaces && length($spaces)) {
+            $leadingspace += 1;
+        }
     }
+
     # print "SCORE: $score\n";
-    return (($linesymbols * 2 + $lineallcaps * 2 + $score) / scalar(@test_lines) >= $weight2);
+    return ($leadingspace == scalar @test_lines) && (($linesymbols * 2 + $lineallcaps * 2 + $linecap) / scalar(@test_lines) >= $weight2);
 
 
 }
