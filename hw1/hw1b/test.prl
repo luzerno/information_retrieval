@@ -1,0 +1,5 @@
+if ("XX" =~ /\b[X]{2,}\b/) {
+    print "yes";
+} else {
+    print "no";
+}

@@ -1,0 +1,451 @@
+#!/usr/bin/perl -w
+
+
+use strict;
+
+
+my @old_test_lines = ();
+my @old_real_lines = ();
+my @test_lines = ( );    
+my @real_lines = ( );    
+my $numb_lines = 0;      
+my $old_numb_lines = 0;
+my $result = undef;
+my $current_result = undef;
+my $correct   = 0;      
+my $incorrect = 0;      
+my $line      = undef;
+my $old_line = "";
+
+sub loadfile {
+    my $path = shift;
+    my @a = ();
+    open(FILE, $path) || die "Cannot open file $path";
+    while (<FILE>) {
+        chop;
+        $a[$#a + 1] = $_;
+    }
+    return join("|", @a);
+}
+my $placeregex = &loadfile("places");
+my $contactregex = &loadfile("contact");
+my $addressregex = &loadfile("address");
+
+
+while (defined ($line = <STDIN>)) {
+    chomp $line;
+    if ($line =~ /^#BLANK#/) {
+
+        if ($numb_lines) {
+            $current_result = &process_segment;     
+                                                 
+                                                
+            if ($result) {
+                if ($current_result eq "NNHEAD") {
+                    if ($result eq "GRAPHIC") {
+                        &detected("SIG");
+                    }
+                    elsif ($result eq "ITEM" && scalar @old_test_lines == 1) {
+                        &detected("SIG");
+                    } else {
+                        &detected($result);
+                    }
+                } else {
+                    &detected($result);
+                }
+            }
+            $result = $current_result;
+            @old_test_lines = @test_lines;
+            @old_real_lines = @real_lines;
+            print $old_line;
+            $old_line = "";
+
+            @test_lines  = ( );   
+            @real_lines  = ( );   
+            $numb_lines  = 0;     
+        }
+        $old_line = $old_line . $line. "\n";
+
+    }
+    else {
+
+        ($test_lines[ $numb_lines ]) = ($line =~ m/^[^\t]+\t(.*)/);
+        ($real_lines[ $numb_lines ]) = ($line =~ m/^([^\t]+)\t/  );
+
+        $numb_lines += 1;
+    }
+    
+}
+print @test_lines;
+if ($current_result eq "GRAPHIC") {
+    &detected("SIG");
+} else {
+    &detected($current_result);
+}
+print $old_line;
+print "CORRECTNESS: ", $correct / ($correct + $incorrect), "\n";
+
+
+sub process_segment {
+    my $cnt;
+    if ( &quoted_detector ) {
+        return "QUOTED";
+    } 
+
+    elsif (&head_detector) {
+        return "NNHEAD";
+    }
+    elsif (&graphic_detector) {
+        return "GRAPHIC";
+    }
+    elsif (&address_detector) {
+        return "ADDRESS";
+    }
+    elsif (&headline_detector) {
+        return "HEADL";
+    }
+    elsif (&table_detector) {
+        return "TABLE";
+    }
+    elsif (&item_detector) {
+        return "ITEM";
+    }   
+    else {
+        return "PTEXT";
+  }
+}
+
+sub detected {
+    my $label = shift;
+    for (my $cnt = 0; $cnt < scalar @old_test_lines; $cnt++) {
+        &ret(0, $old_real_lines[$cnt], $label, $old_test_lines[$cnt]);
+    }
+}
+
+sub table_detector {
+    my $weight = 0.75;
+    my $wordsum = 0;
+    my $charsum = 0;
+    my $wordlenscore = 0;
+    my $charlenscore = 0;
+    my $linespacescore = 0;
+    my $linetabscore = 0;
+    if (scalar @test_lines <= 1) {
+        return 0;
+    }
+    for (my $cnt = 0; $cnt < scalar @test_lines; $cnt++) {
+        my $spacesum = 0;
+        my $tabsum = 0;
+        my @words = split(/\s*/, $test_lines[$cnt]);
+        $wordsum += scalar @words;
+        $charsum += length $test_lines[$cnt];
+
+        my @spaces = split(/[^\s]*/, $test_lines[$cnt]);
+        my @tabs = split(/[^\t]*/, $test_lines[$cnt]);
+        
+        for (my $i = 0; $i < scalar @spaces; $i++) {
+            $spacesum += length $spaces[$i];
+        }
+        for (my $i = 0; $i < scalar @tabs; $i++) {
+            $tabsum += length $tabs[$i];
+        }
+        if (scalar @words <= 3 && $tabsum >= scalar @words || $tabsum >= 3) {
+            $linetabscore++;
+        }
+        if ($spacesum / length $test_lines[$cnt] >= 0.35) {
+            $linespacescore++;
+        }
+    }
+    $wordsum /= scalar @test_lines;
+    $charsum /= scalar @test_lines;
+    for (my $cnt = 0; $cnt < scalar @test_lines; $cnt++) {
+        my @words = split(/\s*/, $test_lines[$cnt]);
+        if (scalar @words >= $wordsum - 1 && scalar @words <= $wordsum + 1) {
+            $wordlenscore++;
+        }
+        if (length $test_lines[$cnt] >= $charsum - 0.5 && length $test_lines[$cnt] <= $charsum + 0.5) {
+            $charlenscore++;
+        }
+    }
+    return ((0.3 * $wordlenscore + 0.5 * $charlenscore + $linespacescore + $linetabscore) / scalar @test_lines >= $weight);
+
+}
+
+sub trim {
+   return $_[0] =~ s/^\s+|\s+$//rg;
+}
+sub leadingspace {
+    my $str;
+    if ($_[0] =~ /(^\s+)/) {
+        $str = $1;
+    } else {
+        $str = "";
+    }
+    return length($str);
+}
+
+
+
+sub indentsamelevel {
+    my @spacelen = ();
+    my $equalspaces = 1;
+    for (my $cnt = 0; $cnt < scalar @test_lines; $cnt++) {
+        $spacelen[$#spacelen + 1] = &leadingspace($test_lines[$cnt]);
+    }
+    for (my $i = 0; $i < (scalar @spacelen) - 1; $i++) {
+        if ($spacelen[$i] != $spacelen[$i + 1]) {
+            $equalspaces = 0;
+        }
+    }
+    return $equalspaces;
+
+}
+sub address_detector {
+    my $contact_score = 0;
+    my $address_score = 0;
+    my $place_score = 0;
+    my $shortlines = 0;
+    my $score = 0;
+    my @spacelen = ();
+    my $score_threshold = 0;
+
+    for (my $cnt = 0; $cnt < scalar @test_lines; $cnt++) {
+        my @words = split(" ", $test_lines[$cnt]);
+
+        if (length(&trim($test_lines[$cnt])) <= 40) {
+            $shortlines++;
+        }
+        for (my $wordcnt = 0; $wordcnt < scalar @words; $wordcnt++) {
+            if (lc($words[$wordcnt]) =~ /\b($contactregex)\b/) {
+                $contact_score = 1;
+            }
+            if ($words[$wordcnt] =~ /\b($addressregex)\b/) {
+                $address_score = 1;
+            }
+            if ($words[$wordcnt] =~ /\b($placeregex)\b/) {
+                $place_score = 1;
+            }
+        }
+    }
+    if (scalar(@test_lines) > 3) {
+        $score_threshold = 2;
+    } else {
+        $score_threshold = 1;
+    }
+    return &indentsamelevel() && ($shortlines / scalar @test_lines >= 0.8) && ($contact_score + $address_score + $place_score >= $score_threshold);
+    
+}
+sub item_detector {
+    my $score = 0;
+    my $weight_score = 0.75;
+    for (my $cnt = 0; $cnt < scalar @test_lines; $cnt++) {
+        if ($test_lines[$cnt] =~ /^\t*\s*\-/) {
+            $score++;
+        }
+        if ($test_lines[$cnt] =~ /^\s*[0-9]\.\s|^\s*\([0-9]\)\s/) {
+            $score += 10;
+        }
+    }
+    return ($score / scalar @test_lines >= $weight_score);
+}
+
+sub graphic_detector {
+    my $num_char = 0;
+    my $num_symbol = 0;
+    my $score = 0;
+    my $weight_sym_ratio = 0.3;
+    my $weight_rep_char = 0.5;
+    my $weight_score = 0.51;
+    my $repcharword = 0;
+    for (my $cnt = 0; $cnt < scalar @test_lines; $cnt++) {
+        my @words = split(" ", $test_lines[$cnt]);
+        $num_char = 0;
+        $num_symbol = 0;
+        $repcharword = 0;
+        for (my $word_cnt = 0; $word_cnt < scalar @words; $word_cnt++) {
+            my @chars = split(//, $words[$word_cnt]);
+            if ($words[$word_cnt] =~ /\b[X]{3,}\b/) {
+                $num_symbol += length($words[$word_cnt]);
+            }
+            for (my $char_cnt = 0; $char_cnt < scalar @chars; $char_cnt++) {
+                $num_char++;
+                if ($chars[$char_cnt] =~ /[~|@|#|\$|%|\^|&|\*|\(|\)|\-|_|=|\+|\[|\]|:|;|"|'|<|>|,|\.|\/|\?|\\|\|]/) {
+                    $num_symbol++;
+                }
+            }
+            my $fc = $chars[0];
+            if (scalar @chars > 1 && $fc =~ /[A-Za-z]/ && $words[$word_cnt] =~ /^$fc+$/) {
+                $repcharword++;
+            }
+        }
+        if ($num_symbol / $num_char >= $weight_sym_ratio || $repcharword / scalar @words >= $weight_rep_char) {
+            $score++;
+        }
+    }
+    return ($score / scalar @test_lines >= $weight_score);
+}
+
+sub sig_detector {
+    my $sym_line = 0;
+    for (my $cnt = 0; $cnt < scalar @test_lines; $cnt++) {
+        my @words = split(" ", $test_lines[$cnt]);
+        my $num_symbol = 0;
+        for (my $word_cnt = 0; $word_cnt < scalar @words; $word_cnt++) {
+            my @chars = split(//, $words[$word_cnt]);
+            for (my $char_cnt = 0; $char_cnt < scalar @chars; $char_cnt++) {
+                if ($chars[$char_cnt] =~ /[\^|_|=|\[|\]|\/|\\|\|]/) {
+                    $num_symbol++;
+                }
+            }
+        }
+        if ($num_symbol >= 3) {
+            $sym_line++;
+        }
+    }
+
+    return ($sym_line / scalar @test_lines >= 0.5);
+
+}
+
+sub headline_detector {
+    my $weight1 = 0.75;
+    my $weight2 = 0.5;
+    my $score = 0;
+    my $linesymbols = 0;
+    my $lineallcaps = 0;
+    my $linecaps = 0;
+    my $leadingspacescore = 0;
+    for (my $cnt = 0; $cnt < scalar @test_lines; $cnt++) {
+        my $spaces = "";
+        ($spaces) = ($test_lines[$cnt] =~ /^(\s+)/);
+        my @words = split(" ", $test_lines[$cnt]);
+        my $caps = 0;
+        my $allcaps = 0;
+        foreach (@words) {
+            if ($_ =~ /^[A-Z0-9]/ || $_=~ /at|or|and|in|of|on|the/) {
+                $caps += 1;      
+            }
+            if ($_ =~ /^[A-Z0-9]*$/) {
+                $allcaps += 1;
+            }
+        }
+        if ($test_lines[$cnt] =~ /\s*^[\-{3,}|={3,}]$ \s*/) {
+            $linesymbols += 1;
+        }
+        if ($allcaps == scalar(@words)) {
+            $lineallcaps += 1;
+        } 
+        if ($caps / scalar(@words) >= $weight1) {
+            $linecaps += 1;
+        }
+        if ($spaces && length($spaces)) {
+            $leadingspacescore += 1;
+        }
+    }
+    return ($leadingspacescore == scalar @test_lines) && (($linesymbols * 2 + $lineallcaps * 2 + $linecaps) / scalar(@test_lines) >= $weight2);
+
+
+}
+sub head_detector {
+    my $weight = 5;
+    my $from = "^From.+";
+    my $article = "^Article:.+";
+    my $path = "^Newsgroups:.+";
+    my $subject = "^Subject:.+";
+    my $message_id = "^Message-ID:.+";
+    my $date = "^Date:.+";
+    my $sender = "^Sender:.+";
+    my $dist = "^Distribution:.+";
+    my $organ = "^Organization:.+";
+    my $lines = "^Lines:.+";
+    my %feats = (
+        $from => 0,
+        $article => 0,
+        $path => 0,
+        $subject => 0,
+        $sender => 0,
+        $message_id => 0,
+        $date => 0,
+        $dist => 0,
+        $organ => 0,
+        $lines => 0
+    );
+
+    
+    for (my $cnt = 0; $cnt < scalar @test_lines; $cnt++) {
+        for my $key (keys %feats) {
+            if ($test_lines[$cnt] =~ /$key/) {
+                $feats{$key} += 1;
+            }
+        }
+    }
+
+    my $score = 0;
+    for my $key (keys %feats) {
+        if ($feats{$key} > 0) {
+            $score += 1;
+        }
+    }
+    return $score >= $weight;
+}
+
+    
+sub quoted_detector {
+
+    my $score  = 0;
+    my $weight = 0.75;  
+    my $cnt;            
+
+
+    my $quote1 = ">";
+    my $quote2 = ":";
+    my $quote3 = "\\|>"; 
+                         
+                         
+                         
+                         
+                         
+                         
+    my $quote4 = "\\@";
+
+    my $block_quote1 = "$quote1|$quote2|$quote3|$quote4";
+    my $block_quote2 = "$quote1|$quote2|$quote4";
+
+
+    my $test_quote1  = "^($block_quote1)(\\s*($block_quote2))*";
+    my $test_quote2  = "^.+((<.*\\@.*>)|(\(.*\\@.*\))).+(wrote|writes):";
+    my $test_quote3  = "^In article\\s<.*\\@.*>";
+    my $prefix = "";
+    if ($test_lines[0] =~ /^\s*([a-zA-Z]{1,5}\s*>)\s*/) {
+        $prefix = $1;
+    }
+    for ($cnt = 0; $cnt < scalar @test_lines; $cnt++) {
+
+        if ( $test_lines[$cnt] =~ /$test_quote1/ ||
+             $test_lines[$cnt] =~ /$test_quote2/ ||
+             $test_lines[$cnt] =~ /$test_quote3/ ||
+             (($prefix ne "") && ($test_lines[$cnt] =~ /^\s*$prefix\s*/))) {
+            $score++;
+        }
+    }
+
+    return (($score / (scalar @test_lines)) > $weight);
+}
+
+sub ret {
+    my $rule       = shift;   
+    my $trueclass  = shift;  
+    my $givenclass = shift; 
+    my $line       = shift;
+
+    if ($trueclass eq $givenclass) {
+        printf(".. (%2d) %s\t%s\t%s\n",$rule,$givenclass,$trueclass,$line);
+        $correct++;
+    }
+    else {
+	
+        printf("XX (%2d) %s\t%s\t%s\n",$rule,$givenclass,$trueclass,$line);
+        $incorrect++;
+    }
+}
+
