@@ -1,6 +1,6 @@
-#!/usr/local/bin/perl
+#!/usr/bin/perl
 
-my $DIR = "/home/0/cs466/hw2";
+my $DIR = "/home/luzerno/workspace/ir/hw2";
 
 my $file_name      = "interactive";
 my $raw_file       = "$file_name\.raw";
