@@ -255,7 +255,8 @@ sub init_corp_freq {
 	my ($qry_num,
 	    $rel_doc)  = split /\s+/, $str;
 
-	$relevance_hash{ "$qry_num" }{ "$rel_doc" } = 1;
+	# $relevance_hash{ "$qry_num" }{ "$rel_doc" } = 1;
+    $relevance_hash{$qry_num + 0}{$rel_doc + 0} = 1;
     }
 }
 
@@ -593,7 +594,14 @@ EndOfMenu
 			    $vect_num,
 			    $qry_vector[$vect_num],
 			    "Query" );
-	
+    # print "yoyoyo\n";	
+    # print "vect_num $vect_num\n";
+    # print $relevance_hash{"$vect_num"};
+    # foreach my $k1 (sort keys %relevance_hash) {
+        # foreach my $k2 (sort keys %{$relevance_hash{$k1}}) {
+        #     print "$k1\t$k2\t$relevance_hash{$k1}{$k2}\n";
+        # }
+    # }
 	&comp_recall( $relevance_hash{ $vect_num },
  		      $vect_num );
 	&show_relvnt( $relevance_hash{ $vect_num },
@@ -745,7 +753,7 @@ EndOfList
 	my $ind = $res_vector[$index];
 
 	if (($comparison =~ /Query/) and 
-	    ($relevance_hash{ $rel_num }{ $ind })) {
+	    ($relevance_hash{ $rel_num + 0}{ $ind + 0})) {
 	    print "\* ";
 	}
 	else {
@@ -836,7 +844,81 @@ EndOfList
 ##########################################################
 
 sub comp_recall {
-    print "To be implemented\n";
+    my $rel = shift;
+    my $qvn = shift;
+    my @ranks = ();
+    my @docranks = ();
+    my $tot_number = (scalar @doc_vector) - 1;
+    my $index = 0;
+
+    # print "number", scalar @doc_vector;
+    # print "number", scalar @res_vector;
+    #
+    push @ranks, 0;  # ranks is the rank of relevant docs
+    push @docranks, 0; # relevant docs
+
+    for $index (0 .. $tot_number) {
+        if (defined($res_vector[$index]) and defined($rel->{$res_vector[$index]}) and ($rel->{$res_vector[$index]} == 1)) {
+            push @ranks, $index + 1;
+            push @docranks, $res_vector[$index];
+        }
+    }
+    my @recs = ();
+    my @precs = ();
+
+    my $num = scalar @ranks - 1;
+    push @recs, 0;
+    push @precs, 1;
+
+    for $index (1 .. $num) {
+        push @recs, $index / $num; # all the recalls 
+        push @precs, $index / $ranks[$index]; # all the precisions
+    }
+
+    my $prec25 = &comp_prec(0.25, \@recs, \@precs);
+    my $prec50 = &comp_prec(0.5, \@recs, \@precs);
+    my $prec75 = &comp_prec(0.75, \@recs, \@precs);
+    my $precmean1 = ($prec25 + $prec50 + $prec75) / 3;
+    my $precmean2 = 0;
+    for my $i (1 .. 10) {
+        $precmean2 += &comp_prec($i / 10, \@recs, \@precs);
+    }
+    $precmean2 /= 10;
+    print "precmeans: $precmean1\nprecmean2: $precmean2\n";
+   
+    # compute recall_norm
+    my $ranksum = 0;
+    my $isum = (1 + $num) * $num / 2;
+    for $index (1 .. $num) {
+        $ranksum += $ranks[$index];
+    }
+    my $recallnorm = 1 - ($ranksum - $isum) / (($tot_number - $num) * $num);
+    print "recallnorm: $recallnorm\n";
+
+    # compute prec_norm
+    my $logranksum = 0;
+    my $logisum = 0;
+    for $index (1 .. $num) {
+        $logranksum += log($ranks[$index]);
+        $logisum += log($index);
+    }
+    my $denom = $tot_number * log($tot_number) - ($tot_number - $num) * log($tot_number - $num) - $num * log($num);
+    my $precnorm = 1 - ($logranksum - $logisum) / $denom;
+    print "precnorm: $precnorm\n";
+
+}
+sub comp_prec {
+    my ($rec, $recs, $precs) = @_;
+    my $prec = 0;
+    my @recs = @{$recs};
+    my @precs = @{$precs};
+    my $i = 0;
+    for $i (0 .. scalar @recs - 2) {
+        if ($recs[$i] <= $rec and $recs[$i + 1] > $rec) {
+            $prec = ($rec - $recs[$i]) / ($recs[$i + 1] - $recs[$i]) * ($precs[$i + 1] - $precs[$i]) + $precs[$i];
+        }
+    }
+    return $prec;
 }
 
 ##########################################################
@@ -960,7 +1042,41 @@ sub full_cosine_similarity {
     my $qry_indx = shift;
     my $doc_indx = shift;
 
-    print "The rest is up to you . . . \n";
+    print "============================================================\n";
+    printf( "%-15s\t%8d\t%8d\t%s\n", 
+	   "Vector Overlap",
+	   $qry_indx        ,
+	   $doc_indx        ,
+	   "Product"       );
+    print "============================================================\n";
+
+    my $term_one = undef;
+    my $weight_one = undef;
+    my $sum_product = 0;
+    my $sum_sq1 = 0;
+    my $sum_sq2 = 0;
+    while (($term_one, $weight_one) = each %{$qry_vect}) {
+        if (exists $$doc_vect{$term_one}) {
+            $sum_product += $weight_one * $$doc_vect{$term_one};
+            printf("%-15s\t%8d\t%8d\t%8d\n" ,
+                $term_one,
+                $weight_one,
+                $$doc_vect{$term_one},
+                $weight_one * $$doc_vect{$term_one});
+        }
+    }
+    my @val1 = values %{$qry_vect};
+    my @val2 = values %{$doc_vect};
+    my $term = undef;
+    foreach $term (@val1) {$sum_sq1 += $term * $term;}
+    foreach $term (@val2) {$sum_sq2 += $term * $term;}
+    my $sim = $sum_product / sqrt($sum_sq1 * $sum_sq2);
+    print "Sum of product: $sum_product\n";
+    print "Sum of square1: $sum_sq1\n";
+    print "Sum of square2: $sum_sq2\n";
+    print "Cosine similarity: $sim\n";
+    print "Cosine similarity2: ", &cosine_sim_a($qry_vect, $doc_vect), "\n";
+
 }
 
 
