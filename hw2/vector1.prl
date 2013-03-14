@@ -1151,7 +1151,7 @@ sub dice_sim {
     }
     my $key = undef;
     my $val = undef;
-
+    my $num = 0;
     while (($key, $val) = each %{$vec1}) {
         $num += $val *($$vec2{$key} || 0); 
     }
@@ -1247,4 +1247,88 @@ sub cosine_sim_b {
     }
 
     return ( $num / sqrt( $sum_sq1 * $sum_sq2 ));
+}
+
+sub get_doc_vectors {
+    my $method = shift;
+    
+    my $TITLE_BASE_WEIGHT = 1;     # weight given a title token
+    my $KEYWD_BASE_WEIGHT = 1;     # weight given a key word token
+    my $ABSTR_BASE_WEIGHT = 1;     # weight given an abstract word token
+    my $AUTHR_BASE_WEIGHT = 1;     # weight given an an author token
+
+    if ($method =~ /5a/) {
+        $TITLE_BASE_WEIGHT = 1;     # weight given a title token
+        $KEYWD_BASE_WEIGHT = 1;     # weight given a key word token
+        $ABSTR_BASE_WEIGHT = 1;     # weight given an abstract word token
+        $AUTHR_BASE_WEIGHT = 1;     # weight given an an author token
+    } elsif ($method =~ /5c/) {
+        $TITLE_BASE_WEIGHT = 1;     # weight given a title token
+        $KEYWD_BASE_WEIGHT = 1;     # weight given a key word token
+        $ABSTR_BASE_WEIGHT = 4;     # weight given an abstract word token
+        $AUTHR_BASE_WEIGHT = 1;     # weight given an an author token
+    } else {
+        $TITLE_BASE_WEIGHT = 3;     # weight given a title token
+        $KEYWD_BASE_WEIGHT = 4;     # weight given a key word token
+        $ABSTR_BASE_WEIGHT = 1;     # weight given an abstract word token
+        $AUTHR_BASE_WEIGHT = 3;     # weight given an an author token
+    }
+
+    my $token_docs_fh = new FileHandle $token_docs, "r"
+	or croak "Failed $token_docs";
+
+    my $word    = undef;
+
+    my $doc_num =  0;    # current document number and total docs at end
+    my $tweight =  0;    # current weight assigned to document token
+
+    push @doc_vector, { };     # push one empty value onto @doc_vector so that
+                               # indices correspond with document numbers
+
+    while (defined( $word = <$token_docs_fh> )) {
+	
+	chomp $word;
+
+	last if $word =~ /^\.I 0/; # indicates end of file so kick out
+	
+	if ($word =~ /^\.I/) {     # indicates start of a new document
+
+	    push @doc_vector, { };
+	    $doc_num++;
+
+	    next;
+	}
+	
+	$tweight = $TITLE_BASE_WEIGHT and next if $word =~ /^\.T/;
+	$tweight = $KEYWD_BASE_WEIGHT and next if $word =~ /^\.K/;
+	$tweight = $ABSTR_BASE_WEIGHT and next if $word =~ /^\.W/;
+	$tweight = $AUTHR_BASE_WEIGHT and next if $word =~ /^\.A/;
+
+
+	if ($word =~ /[a-zA-Z]/ and ($method =~ /4b/ || !exists $stoplist_hash{ $word })) {
+#	    print $word, "\n";
+#	    print $docs_freq_hash{ $word }, "\n";
+
+	    if (defined( $docs_freq_hash{ $word } )) {
+
+#		print $word, "\n";
+            if ($method =~ /1c/) {
+                $doc_vector[$doc_num]{$word} = 1;
+            } else {
+                $doc_vector[$doc_num]{ $word } += $tweight;
+            } 
+        } else {
+                print "ERROR: Document frequency of zero: ", $word, "\n";
+        }
+        }
+    }
+    if (! $method =~ /1a|1c/) {
+        foreach my $hash (@doc_vector) {
+              foreach my $key (keys %{ $hash }) {
+                $hash->{ $key } *= log( $doc_num / $docs_freq_hash{ $key });
+            }
+        }
+    }
+
+    return $doc_num;
 }
