@@ -931,9 +931,31 @@ sub comp_prec {
 ## and print out only the relevant documents, in an order
 ## and manner of presentation very similar to &show_retrieved_set.
 ##########################################################
-
 sub show_relvnt {
-    print "To be implemented\n";
+    my ($rel, $qvn, $qvector) = @_;
+
+    print << "EndOfList";
+
+    ************************************************************
+	Documents relevant to query number $qvn
+    ************************************************************
+    Similarity   Doc#  Author      Title
+    ==========   ==== ========     =============================
+
+EndOfList
+    ;
+    my $index = 0;
+    for $index (0 .. scalar @res_vector) {
+        my $ind = $res_vector[$index];
+        if (defined($ind) and defined($rel->{$ind}) and ($rel->{$ind} == 1)) {
+            # print "doc_simula: $doc_simula[$ind]\n";
+            my ($similarity) = ($doc_simula[$ind] =~ /^([0-9]+(\.\d{0,8})?)/);
+            my $title = substr $titles_vector[$ind], 0, 47;
+            print "  ", $similarity, "\t", $title, "\n";  
+        }
+    }
+    print "\n";
+
 }
 
 
@@ -1115,7 +1137,42 @@ sub full_precision_recall_test {
     # Suggestion: Print some sort of summary here.
 }
 
+sub dice_sim {
+    my $vec1 = shift;
+    my $vec2 = shift;
 
+    my @val1 = values %{$vec1};
+    my @val2 = values %{$vec2};
+
+    if ((scalar @val1) > (scalar @val2)) {
+        my $tmp = $vec1;
+        $vec1 = $vec2;
+        $vec2 = $tmp;
+    }
+    my $key = undef;
+    my $val = undef;
+
+    while (($key, $val) = each %{$vec1}) {
+        $num += $val *($$vec2{$key} || 0); 
+    }
+    $num *= 2;
+
+    my $sum1 = 0;
+    my $sum2 = 0;
+    
+    my $term = undef;
+    foreach $term (@val1) { 
+        $sum1 += $term;
+    }
+    foreach $term (@val2) {
+        $sum2 += $term;
+    }
+    
+    return ($num / ($sum1 + $sum2));
+
+
+
+}
 ########################################################
 ## COSINE_SIM_A
 ## 
