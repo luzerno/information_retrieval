@@ -127,7 +127,6 @@ my @doc_simula = ( );
 
 my @res_vector = ( );
 
- 
 # start program
 
 &main_loop;
@@ -678,7 +677,8 @@ sub get_retrieved_set {
     my $qry_vector = shift;
     my $tot_number = (scalar @doc_vector) - 1;
     my $index      = 0;
-
+    
+    print "TOTAL NUMBER in get_retrieved_set: $tot_number\n";
     @doc_simula = ( );   # insure that storage vectors are empty before we
     @res_vector = ( );   # calculate vector similarities
 
@@ -760,7 +760,7 @@ EndOfList
 	    print "  ";
 	}
 
-	my ($similarity) = ($doc_simula[$ind]    =~ /^([0-9]+\.\d{0,8})/);
+	my ($similarity) = ($doc_simula[$ind]    =~ /^([0-9]+(\.\d{0,8})?)/);
 	my  $title       = substr $titles_vector[$ind], 0, 47;
 
 	print "  ", $similarity, "   ", $title, "\n";
@@ -778,7 +778,7 @@ EndOfList
 	for $index ( 0 .. $max_show ) {
 	    my $ind = $res_vector[$index];
 
-	    show_overlap( $qry_vect,
+	    &show_overlap( $qry_vect,
 			  $doc_vector[$ind],
 			  $qry_num,
 			  $ind );
@@ -878,13 +878,15 @@ sub comp_recall {
     my $prec25 = &comp_prec(0.25, \@recs, \@precs);
     my $prec50 = &comp_prec(0.5, \@recs, \@precs);
     my $prec75 = &comp_prec(0.75, \@recs, \@precs);
+    my $prec100 = &comp_prec(1, \@recs, \@precs);
+
     my $precmean1 = ($prec25 + $prec50 + $prec75) / 3;
     my $precmean2 = 0;
     for my $i (1 .. 10) {
         $precmean2 += &comp_prec($i / 10, \@recs, \@precs);
     }
     $precmean2 /= 10;
-    print "precmeans: $precmean1\nprecmean2: $precmean2\n";
+    # print "precmeans: $precmean1\nprecmean2: $precmean2\n";
    
     # compute recall_norm
     my $ranksum = 0;
@@ -893,7 +895,7 @@ sub comp_recall {
         $ranksum += $ranks[$index];
     }
     my $recallnorm = 1 - ($ranksum - $isum) / (($tot_number - $num) * $num);
-    print "recallnorm: $recallnorm\n";
+    # print "recallnorm: $recallnorm\n";
 
     # compute prec_norm
     my $logranksum = 0;
@@ -904,7 +906,9 @@ sub comp_recall {
     }
     my $denom = $tot_number * log($tot_number) - ($tot_number - $num) * log($tot_number - $num) - $num * log($num);
     my $precnorm = 1 - ($logranksum - $logisum) / $denom;
-    print "precnorm: $precnorm\n";
+    # print "precnorm: $precnorm\n";
+    
+    return ($prec25, $prec50, $prec75, $prec100, $precmean1, $precmean2, $precnorm, $recallnorm);
 
 }
 sub comp_prec {
@@ -912,11 +916,22 @@ sub comp_prec {
     my $prec = 0;
     my @recs = @{$recs};
     my @precs = @{$precs};
+
+    # if ($rec == 1) {
+    #     print "THIS IS RECALLS: ", join(" ", @recs);
+    #     print "\n";
+    #     print "THIS IS PRECISIONS: ", join(" ", @precs);
+    #     print "\n";
+    # }
+
     my $i = 0;
     for $i (0 .. scalar @recs - 2) {
         if ($recs[$i] <= $rec and $recs[$i + 1] > $rec) {
             $prec = ($rec - $recs[$i]) / ($recs[$i + 1] - $recs[$i]) * ($precs[$i + 1] - $precs[$i]) + $precs[$i];
         }
+    }
+    if ($rec == 1) {
+        $prec = $precs[-1];
     }
     return $prec;
 }
@@ -1116,12 +1131,47 @@ sub full_cosine_similarity {
 ##  It is helpful to also log this information to a file.
 ##########################################################
 
+sub print_result {
+    my ($permu, $result) = @_;
+    my @result = @{$result};
+    print $permu, "\t";
+    foreach my $i (@result) {
+        printf "%.3f\t", $i;
+    }
+    print "\n";
+}
 sub full_precision_recall_test {
+    my @result = ();
+    # print "==============================================================================\n";
+    # print "Permutation\tP_0.25\tP_0.5\tP_0.75\tP_1.0\tP_mean1\tP_mean2\tP_norm\tR_norm\n";
+    # print "==============================================================================\n";
+    # @result = &prec_recall_test("1a");
+    # &print_result("Raw TF   ", \@result);
 
-    print "Function is currently unimplemented\n";
+    # @result = &prec_recall_test("1c");
+    # &print_result("Boolean Weight", \@result);
 
-    return;
+    # @result = &prec_recall_test("2b");
+    # &print_result("Dice similarity", \@result);
 
+    # @result = &prec_recall_test("3a");
+    # &print_result("Unstemmed", \@result);
+
+    # @result = &prec_recall_test("4b");
+    # &print_result("All tokens", \@result);
+
+    # @result = &prec_recall_test("5a");
+    # &print_result("Equal weight", \@result);
+
+    # @result = &prec_recall_test("5c");
+    # &print_result("Relative weight", \@result);
+
+    # @result = &prec_recall_test("default");
+    # &print_result("Default   ", \@result);
+    # print "==============================================================================\n";
+
+    
+    # print "Default\t", join("\t", @result), "\n";
     # Suggestion: if using global variables to store cumulative
     #             statistics, initialize them here.
 
@@ -1135,8 +1185,43 @@ sub full_precision_recall_test {
 #    }
     
     # Suggestion: Print some sort of summary here.
+    &shw_result_3a3b;
+    &shw_similar_docs;
 }
 
+sub shw_result_3a3b {
+    &custom_init("3a");
+    &custom_get_retrieved_set("3a", $qry_vector[6]);
+    &custom_shw_retrieved_set(6, $qry_vector[6], "Query");
+    &custom_get_retrieved_set("3a", $qry_vector[9]);
+    &custom_shw_retrieved_set(9, $qry_vector[9], "Query");
+    &custom_get_retrieved_set("3a", $qry_vector[22]);
+    &custom_shw_retrieved_set(22, $qry_vector[22], "Query");
+
+
+    &custom_init("3b");
+
+    &custom_get_retrieved_set("3b", $qry_vector[6]);
+    &custom_shw_retrieved_set(6, $qry_vector[6], "Query");
+    &custom_get_retrieved_set("3b", $qry_vector[9]);
+    &custom_shw_retrieved_set(9, $qry_vector[9], "Query");
+    &custom_get_retrieved_set("3b", $qry_vector[22]);
+    &custom_shw_retrieved_set(22, $qry_vector[22], "Query");
+
+}
+
+sub shw_similar_docs {
+    &custom_init("default");
+    &custom_get_retrieved_set("default", $doc_vector[239]);
+    &shw_retrieved_set(20, 239, $doc_vector[239], "Document");
+
+    &custom_get_retrieved_set("default", $doc_vector[1236]);
+    &shw_retrieved_set(20, 1236, $doc_vector[1236], "Document");
+
+    &custom_get_retrieved_set("default", $doc_vector[2740]);
+    &shw_retrieved_set(20, 2740, $doc_vector[2740], "Document");
+
+}
 sub dice_sim {
     my $vec1 = shift;
     my $vec2 = shift;
@@ -1249,7 +1334,7 @@ sub cosine_sim_b {
     return ( $num / sqrt( $sum_sq1 * $sum_sq2 ));
 }
 
-sub get_doc_vectors {
+sub custom_doc_vectors {
     my $method = shift;
     
     my $TITLE_BASE_WEIGHT = 1;     # weight given a title token
@@ -1281,7 +1366,7 @@ sub get_doc_vectors {
 
     my $doc_num =  0;    # current document number and total docs at end
     my $tweight =  0;    # current weight assigned to document token
-
+    @doc_vector = ();
     push @doc_vector, { };     # push one empty value onto @doc_vector so that
                                # indices correspond with document numbers
 
@@ -1318,7 +1403,7 @@ sub get_doc_vectors {
                 $doc_vector[$doc_num]{ $word } += $tweight;
             } 
         } else {
-                print "ERROR: Document frequency of zero: ", $word, "\n";
+                print "hereERROR: Document frequency of zero: ", $word, "\n";
         }
         }
     }
@@ -1332,3 +1417,175 @@ sub get_doc_vectors {
 
     return $doc_num;
 }
+
+sub custom_qry_vectors {
+    my $method = shift;
+    my $QUERY_BASE_WEIGHT = 2;
+    my $QUERY_AUTH_WEIGHT = 2;
+
+    my $token_qrys_fh = new FileHandle $token_qrys, "r"
+	or croak "Failed $token_qrys";
+
+    my $word = undef;
+
+    my $tweight =  0;
+    my $qry_num =  0;
+    
+    @qry_vector = ();
+    push @qry_vector, { };    # push one empty value onto @qry_vectors so that
+                              # indices correspond with query numbers
+
+    while (defined( $word = <$token_qrys_fh> )) {
+
+	chomp $word;
+
+	if ($word =~ /^\.I/) {
+	    
+	    push @qry_vector, { };
+	    $qry_num++;
+
+	    next;
+	}
+
+	$tweight = $QUERY_BASE_WEIGHT and next if $word =~ /^\.W/;
+	$tweight = $QUERY_AUTH_WEIGHT and next if $word =~ /^\.A/;
+
+	if ($word =~ /[a-zA-Z]/ && ($method =~ /4b/ || !exists $stoplist_hash{ $word })) {
+
+	    if (! exists $docs_freq_hash{ $word }) {
+		print "ERROR: Document frequency of zero: ", $word, "\n";
+	    }
+	    else {
+		$qry_vector[$qry_num]{ $word } += $tweight;
+	    }
+	}
+    }
+    if (!$method =~ /1a|1c/) {
+    
+    foreach my $hash (@qry_vector) {
+    	  foreach my $key (keys %{ $hash }) {
+            $hash->{ $key } = log( $qry_num / $docs_freq_hash{ $key });
+        }
+    }
+    }
+
+    return $qry_num;
+}
+
+sub custom_init {
+    my $method = shift;
+
+    $token_docs = "$DIR/cacm";           # tokenized cacm journals
+    $corps_freq = "$DIR/cacm";           # frequency of each token in the journ.
+    $stoplist   = "$DIR/common_words";   # common uninteresting words
+    $token_qrys = "$DIR/query";          # tokenized canned querys
+    $query_freq = "$DIR/query";          # frequency of each token in the querys
+
+    $token_intr = "$HOME/interactive";    # file created for interactive queries
+    $inter_freq = "$HOME/interactive";    # frequency of each token in above
+    
+
+    if ($method =~ /3a/) {
+        &init_files("unstemmed");
+    } else {
+        &init_files("stemmed");
+    }
+    &init_corp_freq;
+    my $total_docs = &custom_doc_vectors($method);
+    my $total_qrys = &custom_qry_vectors($method);
+    # &custom_get_retrieved_set;    
+}
+sub prec_recall_test {
+    my $method = shift;
+    my $tot_queries = scalar @qry_vector - 1;
+    my @result = (0, 0, 0, 0, 0, 0, 0, 0);
+    # print "TOTAL QUERIES: $tot_queries\n";
+    &custom_init($method);
+    for my $ind (1 .. $tot_queries) {
+        &custom_get_retrieved_set($method, $qry_vector[$ind]);
+        my @temp = &comp_recall($relevance_hash{$ind}, $ind);
+        for my $i (0 .. 7) {
+            $result[$i] += $temp[$i];
+        }
+    }
+
+    for my $i (0 .. 7) {
+        $result[$i] /= $tot_queries;
+    }
+    return @result;
+}
+
+sub custom_get_retrieved_set {
+    my $method = shift;
+    my $qry_vector = shift;
+    my $tot_number = (scalar @doc_vector) - 1;
+    my $index = 0;
+
+    @doc_simula = ();
+    @res_vector = ();
+
+    push @doc_simula, 0.0;
+    
+    # print "TOTAL NUMBER: $tot_number\n";
+    for $index (1 .. $tot_number) {
+        if ($method =~ /2b/) {
+            push @doc_simula, &dice_sim($qry_vector, $doc_vector[$index]);
+        } else {
+            # print $index, "\n";
+            push @doc_simula, &cosine_sim_a($qry_vector, $doc_vector[$index]);
+        }
+    }
+    @res_vector = sort{-1 * ($doc_simula[$a] <=> $doc_simula[$b]);} 1 .. $tot_number;
+}
+sub custom_shw_retrieved_set {
+
+    my $qry_num    = shift;
+    my $qry_vect   = shift;
+    my $comparison = shift;
+
+    print << "EndOfList";
+
+    ************************************************************
+	Documents Most Similar To $comparison number $qry_num
+    ************************************************************
+    Similarity   Doc#  Author      Title
+    ==========   ==== ========     =============================
+
+EndOfList
+    ;
+
+    my $rel_num = ($qry_num =~ /^\d$/) ? "0$qry_num" : $qry_num;
+    my $index   = 0;
+
+    for $index ( 0 .. 20 ) {
+	my $ind = $res_vector[$index];
+
+	if (($comparison =~ /Query/) and 
+	    ($relevance_hash{ $rel_num + 0}{ $ind + 0})) {
+	    print "\* ";
+	}
+	else {
+	    print "  ";
+	}
+
+	my ($similarity) = ($doc_simula[$ind]    =~ /^([0-9]+\.\d{0,8})/);
+	my  $title       = substr $titles_vector[$ind], 0, 47;
+
+	print "  ", $similarity, "   ", $title, "\n";
+    }
+
+    print "\n";
+
+
+
+	for $index ( 0 .. 10) {
+	    my $ind = $res_vector[$index];
+
+	    &show_overlap( $qry_vect,
+			  $doc_vector[$ind],
+			  $qry_num,
+			  $ind );
+
+    }
+}
+

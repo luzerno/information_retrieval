@@ -9,6 +9,11 @@ comp_prec	vector1.prl	/^sub comp_prec {$/;"	s
 comp_recall	vector1.prl	/^sub comp_recall {$/;"	s
 cosine_sim_a	vector1.prl	/^sub cosine_sim_a {$/;"	s
 cosine_sim_b	vector1.prl	/^sub cosine_sim_b {$/;"	s
+custom_doc_vectors	vector1.prl	/^sub custom_doc_vectors {$/;"	s
+custom_get_retrieved_set	vector1.prl	/^sub custom_get_retrieved_set {$/;"	s
+custom_init	vector1.prl	/^sub custom_init {$/;"	s
+custom_qry_vectors	vector1.prl	/^sub custom_qry_vectors {$/;"	s
+dice_sim	vector1.prl	/^sub dice_sim {$/;"	s
 do_full_cosine_similarity	vector1.prl	/^sub do_full_cosine_similarity {$/;"	s
 full_cosine_similarity	vector1.prl	/^sub full_cosine_similarity {$/;"	s
 full_precision_recall_test	vector1.prl	/^sub full_precision_recall_test {$/;"	s
@@ -19,7 +24,10 @@ init_doc_vectors	vector1.prl	/^sub init_doc_vectors {$/;"	s
 init_files	vector1.prl	/^sub init_files {$/;"	s
 init_qry_vectors	vector1.prl	/^sub init_qry_vectors {$/;"	s
 main_loop	vector1.prl	/^sub main_loop {$/;"	s
+prec_recall_test	vector1.prl	/^sub prec_recall_test {$/;"	s
+print_result	vector1.prl	/^sub print_result {$/;"	s
 set_interact_vec	vector1.prl	/^sub set_interact_vec {$/;"	s
 show_overlap	vector1.prl	/^sub show_overlap {$/;"	s
 show_relvnt	vector1.prl	/^sub show_relvnt {$/;"	s
+shw_result_3a3b	vector1.prl	/^sub shw_result_3a3b {$/;"	s
 shw_retrieved_set	vector1.prl	/^sub shw_retrieved_set {$/;"	s
