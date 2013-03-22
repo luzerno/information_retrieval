@@ -31,7 +31,7 @@ use FileHandle;
 ## Program Defaults and Global Variables
 ############################################################
 
-my $DIR  = "/home/luzerno/workspace/ir/hw2";
+my $DIR  = ".";
 my $HOME = ".";
 
 my $token_docs = "$DIR/cacm";           # tokenized cacm journals

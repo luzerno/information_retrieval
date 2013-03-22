@@ -13,6 +13,7 @@ custom_doc_vectors	vector1.prl	/^sub custom_doc_vectors {$/;"	s
 custom_get_retrieved_set	vector1.prl	/^sub custom_get_retrieved_set {$/;"	s
 custom_init	vector1.prl	/^sub custom_init {$/;"	s
 custom_qry_vectors	vector1.prl	/^sub custom_qry_vectors {$/;"	s
+custom_shw_retrieved_set	vector1.prl	/^sub custom_shw_retrieved_set {$/;"	s
 dice_sim	vector1.prl	/^sub dice_sim {$/;"	s
 do_full_cosine_similarity	vector1.prl	/^sub do_full_cosine_similarity {$/;"	s
 full_cosine_similarity	vector1.prl	/^sub full_cosine_similarity {$/;"	s
@@ -31,3 +32,4 @@ show_overlap	vector1.prl	/^sub show_overlap {$/;"	s
 show_relvnt	vector1.prl	/^sub show_relvnt {$/;"	s
 shw_result_3a3b	vector1.prl	/^sub shw_result_3a3b {$/;"	s
 shw_retrieved_set	vector1.prl	/^sub shw_retrieved_set {$/;"	s
+shw_similar_docs	vector1.prl	/^sub shw_similar_docs {$/;"	s

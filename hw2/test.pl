@@ -1,3 +1,4 @@
+#!/usr/bin/perl
 sub test {
     return (1, 2, 3);
 }
@@ -7,3 +8,11 @@ print &test;
 @a = (1, 2, 3, 4, 5);
 @b = (2, 3, 4, 5, 6);
 print @a + @b;
+
+
+
+if (".Abc 123" =~ /^[^\.]/) {
+    print "yes";
+} else {
+    print "no"
+}
