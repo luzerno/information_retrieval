@@ -11,7 +11,7 @@ print @a + @b;
 
 
 
-if ("abc .I 0" =~ /.+\.I/) {
+if ("default" =~ /1a|1c/) {
     print "yes";
 } else {
     print "no"

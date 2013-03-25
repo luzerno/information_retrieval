@@ -8,7 +8,6 @@ my $query = "$DIR/query.stemmed";
 my %stoplist_hash = ();
 
 my $stoplist_fh = new FileHandle $stoplist, "r" or die "Failed $stoplist";
-my $query_fh = new FileHandle $query, "r" or die "Failed $query";
 
 my $line = undef;
 while (defined($line = <$stoplist_fh>)) {
@@ -17,9 +16,10 @@ while (defined($line = <$stoplist_fh>)) {
 }
 my $word = undef;
 
-while (defined($word = <$query_fh>)) {
+while (defined($word = <STDIN>)) {
     chomp $word;
-    if ($word =~ /^[^\.]/ and !exists $stoplist_hash{$word}) {
+    # if ($word =~ /^[^\.]/ and !exists $stoplist_hash{$word}) {
+    if (!exists $stoplist_hash{$word}) {
         print $word, "\n";
     }
 }

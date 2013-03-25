@@ -20,10 +20,14 @@ full_cosine_similarity	vector1.prl	/^sub full_cosine_similarity {$/;"	s
 full_precision_recall_test	vector1.prl	/^sub full_precision_recall_test {$/;"	s
 get_and_show_retrieved_set	vector1.prl	/^sub get_and_show_retrieved_set {$/;"	s
 get_retrieved_set	vector1.prl	/^sub get_retrieved_set {$/;"	s
+init_corp_bigram_freq	vector1.prl	/^sub init_corp_bigram_freq {$/;"	s
+init_corp_five_freq	vector1.prl	/^sub init_corp_five_freq {$/;"	s
 init_corp_freq	vector1.prl	/^sub init_corp_freq {$/;"	s
 init_doc_vectors	vector1.prl	/^sub init_doc_vectors {$/;"	s
+init_doc_vectors_bigram	vector1.prl	/^sub init_doc_vectors_bigram {$/;"	s
 init_files	vector1.prl	/^sub init_files {$/;"	s
 init_qry_vectors	vector1.prl	/^sub init_qry_vectors {$/;"	s
+init_qry_vectors_bigram	vector1.prl	/^sub init_qry_vectors_bigram {$/;"	s
 main_loop	vector1.prl	/^sub main_loop {$/;"	s
 prec_recall_test	vector1.prl	/^sub prec_recall_test {$/;"	s
 print_result	vector1.prl	/^sub print_result {$/;"	s

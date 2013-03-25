@@ -1,6 +1,6 @@
     1	    1	permut+siam
-    1	    1	discuss+optim
     1	    1	packet+radio
+    1	    1	discuss+optim
     1	    1	intermedi+machin
     1	    1	code+optim
     1	    1	manag+applic
@@ -36,7 +36,6 @@
     1	    1	disjoint+process
     1	    1	decomposit+singular
     1	    1	commun+synchron
-    1	    1	compact+parallel
     1	    1	problem+remot
     1	    1	structur+algorithm
     1	    1	special+emphasi
@@ -53,27 +52,22 @@
     1	    1	design+view
     1	    1	matric+especi
     1	    1	handl+oper
-    1	    1	system+code
-    1	    1	comput+interest
     1	    1	network+topographi
     1	    1	isomorph+method
     1	    1	chines+remaind
     1	    1	loop+global
     1	    1	space+effici
-    1	    2	algorithm+graph
+    1	    1	algorithm+graph
     1	    1	interest+includ
     1	    1	inform+packet
-    1	    1	vol+davi
     1	    1	share+system
     1	    1	optim+loop
     1	    1	interest+distribut
     1	    1	kahn+stewart
     1	    1	algorithm+databas
-    1	    1	interest+paper
-    1	    2	find+discuss
     1	    1	techniqu+understand
+    2	    2	find+discuss
     1	    1	rotat+eigenvector
-    1	    1	algorithm+appli
     1	    1	high+level
     1	    1	highli+horizont
     1	    1	interest+dynam
@@ -81,38 +75,33 @@
     1	    1	toroid+sphere
     1	    1	theoret+work
     1	    1	aspect+oper
-    1	    1	bravo+find
     1	    1	interfac+design
     1	    1	eigenvalu+articl
     1	    1	approxim+invari
     1	    1	number+seri
-    1	    1	edit+interfac
     1	    1	window+manag
+    1	    1	edit+interfac
     1	    1	aspect+interest
     1	    1	eigenspac+distinct
-    1	    1	pooch+intermedi
     1	    1	essenti+issu
     1	    1	paper+design
-    1	    1	comput+setl
     1	    1	base+eigenvalu
     1	    1	intermedi+languag
     1	    1	implement+sort
     1	    1	priev+udo
-    1	    1	satisfact+interest
     1	    1	graph+algorithm
     1	    1	network+interest
     1	    1	pass+interest
     1	    1	decomposit+real
     1	    2	andrew+patterson
-    1	    1	effici+find
     1	    2	digit+imag
-    1	    2	network+oper
+    2	    2	network+oper
     1	    1	deal+tss
     1	    1	applic+includ
     1	    1	articl+exist
     1	    1	graph+theoret
     1	    1	process+messag
-    1	    2	machin+code
+    2	    2	machin+code
     1	    1	articl+robot
     1	    1	setl+high
     1	    1	toler+techniqu
@@ -126,7 +115,6 @@
     1	    1	target+compil
     1	    1	decomposit+ajac
     1	    1	optim+intermedi
-    1	    1	pooch+priev
     1	    1	human+interfac
     1	    1	subspac+close
     1	    1	restor+imag
@@ -134,19 +122,18 @@
     1	    1	matrix+graph
     1	    1	heurist+algorithm
     1	    1	design+implement
-    1	    1	work+abstract
     1	    1	articl+text
+    1	    1	work+abstract
     1	    1	discuss+horizont
-    1	    1	vol+andrew
-    1	    1	distribut+system
     1	    1	deal+network
+    1	    1	distribut+system
     1	    1	implement+edit
     1	    1	languag+compil
-    1	    7	oper+system
+    1	    1	stewart+
+    7	    7	oper+system
     1	    1	view+improv
     1	    1	find+descript
     1	    1	written+priev
-    1	    1	system+concurr
     1	    1	correct+algorithm
     1	    1	includ+system
     1	    1	graph+isomorph
@@ -154,24 +141,19 @@
     1	    1	rout+deal
     1	    1	hidden+line
     1	    1	error+bound
-    1	    1	system+memori
     1	    1	implement+oppos
-    1	    1	network+number
     1	    1	number+theoret
-    1	    1	tcoll+interest
-    1	    2	singular+decomposit
+    2	    2	singular+decomposit
     1	    1	close+linear
     1	    1	algorithm+cylind
     1	    1	imag+subject
-    1	    1	languag+portabl
     1	    1	priev+pooch
     1	    1	remaind+theorem
     1	    1	compil+parallel
-    1	    2	especi+interest
+    2	    2	especi+interest
     1	    1	process+possibli
     1	    1	comput+complex
     1	    1	articl+written
-    1	    1	motion+interest
     1	    1	linear+oper
     1	    1	comput+graphic
     1	    2	analysi+vol
@@ -179,7 +161,6 @@
     1	    1	optim+special
     1	    1	cylind+toroid
     1	    1	reduct+algorithm
-    1	    1	graphic+distribut
     1	    2	siam+numer
     1	    1	origin+imag
     1	    1	separ+eigenspac
@@ -195,6 +176,7 @@
     1	    1	ibm+comput
     1	    1	geometr+combinatori
     1	    1	sensit+eigenvalu
+   33	   33	.W
     1	    1	nroff+scribe
     1	    1	system+oper
     1	    1	radio+network
@@ -202,10 +184,9 @@
     1	    1	hardwar+network
     1	    1	languag+construct
     1	    1	procedur+call
-    1	    1	pass+optim
     1	    1	dynam+arm
     1	    1	synchron+messag
-    1	    1	system+parallel
+    3	    3	.A
     1	    1	sphere+cone
     1	    1	especi+highli
     1	    1	comput+structur
@@ -217,22 +198,19 @@
     1	    1	system+distribut
     1	    1	parallel+processor
     1	    1	special+topic
-    1	    1	robot+motion
     1	    1	plan+geometr
-    1	    1	effici+interest
+    1	    1	robot+motion
     1	    1	possibli+exclus
-    1	    1	system+inform
     1	    1	complet+mechan
-    1	    2	horizont+microcod
-    1	    1	subject+nois
+    2	    2	horizont+microcod
     1	    1	interpret+essenti
+    1	    1	subject+nois
     1	    1	command+interpret
     1	    1	prime+number
     1	    1	parallel+languag
     1	    1	topic+comput
-    1	    1	method+articl
     1	    1	interest+mechan
-    1	    2	theoret+algorithm
+    2	    2	theoret+algorithm
     1	    1	surfac+algorithm
     1	    1	memori+manag
     1	    1	parallel+comput
@@ -241,20 +219,17 @@
     1	    1	descript+complet
     1	    1	class+complet
     1	    1	siev+chines
-    1	    1	matric+comput
     1	    1	applic+spars
     1	    1	algorithm+especi
     1	    1	control+mechan
     1	    1	packet+rout
-    1	    3	messag+pass
-    1	    1	code+languag
+    3	    3	messag+pass
     1	    1	distribut+environ
     1	    1	appli+stochast
     1	    1	address+scheme
     1	    1	scheme+resourc
-    1	    1	optim+find
     1	    1	environ+descript
-    1	    2	find+articl
+    2	    2	find+articl
     1	    1	find+approxim
     1	    1	process+american
     1	    1	portabl+oper
@@ -262,21 +237,18 @@
     1	    1	approxim+origin
     1	    1	concurr+program
     1	    1	includ+fault
-    1	    1	applic+find
     1	    1	complex+intract
-    1	    1	algorithm+address
-    1	    1	optim+space
     1	    1	graph+color
+    1	    1	optim+space
     1	    1	pass+area
     1	    1	compil+tcoll
     1	    1	base+multipl
     1	    1	optim+implement
     1	    1	interest+algorithm
-    1	    1	theorem+articl
     1	    1	line+hidden
     1	    1	comput+system
-    1	    1	interest+hidden
     1	    1	commun+disjoint
+    1	    1	interest+hidden
     1	    1	american+mathemat
     1	    1	vol+stewart
     1	    1	time+share
@@ -286,48 +258,45 @@
     1	    1	includ+find
     1	    1	nois+articl
     1	    1	arm+motion
-    1	    1	process+applic
     1	    1	bound+approxim
+    1	    1	process+applic
     1	    1	effici+effect
     1	    1	global+optim
     1	    1	exclus+distribut
     1	    1	algorithm+packet
-    1	    1	system+secur
     1	    1	color+graph
     1	    1	oper+siam
     1	    2	davi+kahn
-    1	    1	tss+time
     1	    1	distinct+eigenvalu
-    1	    1	manag+command
-    1	    1	program+process
+    1	    1	tss+time
     1	    1	subject+davi
+    1	    1	program+process
+    1	    1	manag+command
     1	    1	outer+product
     1	    2	imag+process
     1	    1	algorithm+concurr
-    1	    1	process+perform
     1	    1	matric+matric
     1	    1	interest+hardwar
-    1	    1	concurr+control
     1	    1	descript+handl
+    1	    1	concurr+control
     1	    1	understand+correct
     1	    1	system+nroff
     1	    1	modell+comput
-    1	    1	text+format
     1	    1	languag+parallel
+    1	    1	text+format
     1	    1	real+matric
     1	    1	algorithm+effici
     1	    1	area+interest
     1	    1	issu+human
     1	    1	microcod+optim
-    1	    1	patterson+find
-    1	    1	scribe+bravo
     1	    1	distribut+algorithm
+    1	    1	scribe+bravo
     1	    1	intract+class
     1	    1	abstract+problem
-    1	    2	articl+subject
-    1	    2	interest+articl
-    1	    1	network+resourc
+    2	    2	articl+subject
+    2	    2	interest+articl
     1	    1	invari+subspac
+    1	    1	network+resourc
     1	    1	fault+toler
     1	    1	databas+manag
-    1	    2	eigenvalu+decomposit
+    2	    2	eigenvalu+decomposit
