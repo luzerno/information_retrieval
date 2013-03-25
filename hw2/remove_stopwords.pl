@@ -18,7 +18,7 @@ while (defined($line = <$stoplist_fh>)) {
 my $word = undef;
 while (defined($word = <$corps_fh>)) {
     chomp $word;
-    if ($word =~ /^[^\.]/ and !exists $stoplist_hash{$word}) {
+    if (($word =~ /^[^\.]/ or $word =~ /^\.I/)and !exists $stoplist_hash{$word}) {
         print $word, "\n";
     }
 }

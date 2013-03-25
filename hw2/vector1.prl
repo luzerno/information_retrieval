@@ -1142,33 +1142,33 @@ sub print_result {
 }
 sub full_precision_recall_test {
     my @result = ();
-    # print "==============================================================================\n";
-    # print "Permutation\tP_0.25\tP_0.5\tP_0.75\tP_1.0\tP_mean1\tP_mean2\tP_norm\tR_norm\n";
-    # print "==============================================================================\n";
-    # @result = &prec_recall_test("1a");
-    # &print_result("Raw TF   ", \@result);
+    print "==============================================================================\n";
+    print "Permutation\tP_0.25\tP_0.5\tP_0.75\tP_1.0\tP_mean1\tP_mean2\tP_norm\tR_norm\n";
+    print "==============================================================================\n";
+    @result = &prec_recall_test("1a");
+    &print_result("Raw TF   ", \@result);
 
-    # @result = &prec_recall_test("1c");
-    # &print_result("Boolean Weight", \@result);
+    @result = &prec_recall_test("1c");
+    &print_result("Boolean Weight", \@result);
 
-    # @result = &prec_recall_test("2b");
-    # &print_result("Dice similarity", \@result);
+    @result = &prec_recall_test("2b");
+    &print_result("Dice similarity", \@result);
 
-    # @result = &prec_recall_test("3a");
-    # &print_result("Unstemmed", \@result);
+    @result = &prec_recall_test("3a");
+    &print_result("Unstemmed", \@result);
 
-    # @result = &prec_recall_test("4b");
-    # &print_result("All tokens", \@result);
+    @result = &prec_recall_test("4b");
+    &print_result("All tokens", \@result);
 
-    # @result = &prec_recall_test("5a");
-    # &print_result("Equal weight", \@result);
+    @result = &prec_recall_test("5a");
+    &print_result("Equal weight", \@result);
 
-    # @result = &prec_recall_test("5c");
-    # &print_result("Relative weight", \@result);
+    @result = &prec_recall_test("5c");
+    &print_result("Relative weight", \@result);
 
-    # @result = &prec_recall_test("default");
-    # &print_result("Default   ", \@result);
-    # print "==============================================================================\n";
+    @result = &prec_recall_test("default");
+    &print_result("Default   ", \@result);
+    print "==============================================================================\n";
 
     
     # print "Default\t", join("\t", @result), "\n";
@@ -1464,7 +1464,7 @@ sub custom_qry_vectors {
     
     foreach my $hash (@qry_vector) {
     	  foreach my $key (keys %{ $hash }) {
-            $hash->{ $key } = log( $qry_num / $docs_freq_hash{ $key });
+            $hash->{ $key } *= log( $qry_num / $docs_freq_hash{ $key });
         }
     }
     }

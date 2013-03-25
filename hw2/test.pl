@@ -11,7 +11,7 @@ print @a + @b;
 
 
 
-if (".Abc 123" =~ /^[^\.]/) {
+if ("abc .I 0" =~ /.+\.I/) {
     print "yes";
 } else {
     print "no"
