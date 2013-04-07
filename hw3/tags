@@ -1,0 +1,27 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+OPTIONS	vector.pl	/^    OPTIONS:$/;"	l
+classify_training_docs	vector.pl	/^sub classify_training_docs {$/;"	s
+comp_recall	vector.pl	/^sub comp_recall {$/;"	s
+compute_centroids	vector.pl	/^sub compute_centroids {$/;"	s
+cosine_sim_a	vector.pl	/^sub cosine_sim_a {$/;"	s
+cosine_sim_b	vector.pl	/^sub cosine_sim_b {$/;"	s
+do_full_cosine_similarity	vector.pl	/^sub do_full_cosine_similarity {$/;"	s
+full_cosine_similarity	vector.pl	/^sub full_cosine_similarity {$/;"	s
+full_precision_recall_test	vector.pl	/^sub full_precision_recall_test {$/;"	s
+get_and_show_retrieved_set	vector.pl	/^sub get_and_show_retrieved_set {$/;"	s
+get_retrieved_set	vector.pl	/^sub get_retrieved_set {$/;"	s
+init_corp_freq	vector.pl	/^sub init_corp_freq {$/;"	s
+init_doc_vectors	vector.pl	/^sub init_doc_vectors {$/;"	s
+init_files	vector.pl	/^sub init_files {$/;"	s
+init_stoplist	vector.pl	/^sub init_stoplist {$/;"	s
+main	vector.pl	/^sub main {$/;"	s
+main_loop	vector.pl	/^sub main_loop {$/;"	s
+set_interact_vec	vector.pl	/^sub set_interact_vec {$/;"	s
+show_overlap	vector.pl	/^sub show_overlap {$/;"	s
+show_relvnt	vector.pl	/^sub show_relvnt {$/;"	s
+shw_retrieved_set	vector.pl	/^sub shw_retrieved_set {$/;"	s
